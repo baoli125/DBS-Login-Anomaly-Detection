@@ -169,33 +169,51 @@ class Database:
         try:
             conn = Database.get_connection()
             cursor = conn.cursor()
-            
+
+            # map to schema with entity_type/entity_value (no username/src_ip columns)
+            entity_type = alert_data.get('entity_type')
+            entity_value = alert_data.get('entity_value')
+            if not entity_type or not entity_value:
+                if alert_data.get('username'):
+                    entity_type = 'user'
+                    entity_value = alert_data.get('username')
+                elif alert_data.get('src_ip'):
+                    entity_type = 'ip'
+                    entity_value = alert_data.get('src_ip')
+                else:
+                    entity_type = 'unknown'
+                    entity_value = 'unknown'
+
             sql = """
             INSERT INTO alerts 
-            (username, src_ip, alert_type, attack_type, rule_name, 
-             detection_type, confidence, risk_score, action, features, timestamp)
+            (alert_type, entity_type, entity_value, detection_time,
+             score, confidence, attack_type, rule_name, action_taken, action_details, features)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            
+
+            # map store: ml score in `score`, keep risk_score in features for debugging
+            alert_features = alert_data.get('features', {}) or {}
+            alert_features['risk_score'] = alert_data.get('risk_score', 0.0)
+
             cursor.execute(sql, (
-                alert_data.get('username', 'unknown'),
-                alert_data.get('src_ip', '0.0.0.0'),
                 alert_data.get('alert_type', 'rule_based'),
+                entity_type,
+                entity_value,
+                alert_data.get('detection_time', datetime.now()),
+                alert_data.get('score', alert_data.get('ml_score', 0.0)),
+                alert_data.get('confidence', 0.0),
                 alert_data.get('attack_type', 'unknown'),
                 alert_data.get('rule_name', None),
-                alert_data.get('detection_type', 'unknown'),
-                alert_data.get('confidence', 0.0),
-                alert_data.get('risk_score', 0.0),
                 alert_data.get('action', 'allow'),
-                json.dumps(alert_data.get('features', {})),
-                alert_data.get('timestamp', datetime.now())
+                alert_data.get('action_details', ''),
+                json.dumps(alert_features)
             ))
-            
+
             alert_id = cursor.lastrowid
             logger.info(f" Alert logged: ID={alert_id}, Type={alert_data.get('alert_type')}")
-            
+
             return alert_id
-            
+
         except Exception as e:
             logger.error(f"Alert logging error: {e}")
             return None

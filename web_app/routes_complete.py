@@ -54,10 +54,14 @@ def login():
     # POST request - process login
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
-    src_ip = request.remote_addr
+    xff = request.headers.get('X-Forwarded-For', '')
+    src_ip = xff.split(',')[0].strip() if xff else request.remote_addr
     user_agent = request.headers.get('User-Agent', '')
     
-    logger.info(f" Login attempt: {username} from {src_ip}")
+    if DETECTION_DEBUG:
+        logger.info(f" Login attempt: {username} from {src_ip}")
+    else:
+        logger.debug(f" Login attempt: {username} from {src_ip}")
     
     # ==================== SECURITY CHECKS ====================
     
@@ -93,14 +97,19 @@ def login():
             if detection_result.get('should_block'):
                 # Log detection
                 Database.log_alert({
+                    'entity_type': 'ip',
+                    'entity_value': src_ip,
                     'username': username,
                     'src_ip': src_ip,
                     'alert_type': detection_result.get('detection_type'),
                     'attack_type': detection_result.get('attack_type'),
                     'rule_name': detection_result.get('rule_triggered'),
                     'confidence': detection_result.get('confidence'),
+                    'score': detection_result.get('ml_prediction', {}).get('score', detection_result.get('confidence', 0.0)),
                     'risk_score': detection_result.get('risk_score'),
-                    'action': 'blocked'
+                    'action': 'block',
+                    'action_details': detection_result.get('block_reason'),
+                    'features': detection_result.get('metrics', {})
                 })
                 
                 # Block IP if needed
@@ -132,12 +141,18 @@ def login():
     
     if user:
         success = True
-        logger.info(f" Login successful: {username} from {src_ip}")
+        if DETECTION_DEBUG:
+            logger.info(f" Login successful: {username} from {src_ip}")
+        else:
+            logger.debug(f" Login successful: {username} from {src_ip}")
         if detection_result:
             detection_result['success'] = True
     else:
         success = False
-        logger.warning(f" Login failed: {username} from {src_ip}")
+        if DETECTION_DEBUG:
+            logger.info(f" Login failed: {username} from {src_ip}")
+        else:
+            logger.debug(f" Login failed: {username} from {src_ip}")
         
         # Run detection on failed attempt
         if DETECTION_AVAILABLE and not detection_result:
@@ -164,28 +179,33 @@ def login():
             request_path='/login',
             http_method='POST'
         )
-        logger.info(f" Auth logged: ID={log_id}")
+        if DETECTION_DEBUG:
+            logger.info(f" Auth logged: ID={log_id}")
+        else:
+            logger.debug(f" Auth logged: ID={log_id}")
     except Exception as e:
         logger.error(f"Error logging auth: {e}")
     
     # 7. Log detection event if triggered
     if detection_result and detection_result.get('detection_type') != 'none':
-        try:
-            Database.log_alert({
-                'username': username,
-                'src_ip': src_ip,
-                'alert_type': detection_result.get('detection_type'),
-                'attack_type': detection_result.get('attack_type'),
-                'rule_name': detection_result.get('rule_triggered'),
-                'detection_type': detection_result.get('detection_type'),
-                'confidence': detection_result.get('confidence'),
-                'risk_score': detection_result.get('risk_score'),
-                'action': detection_result.get('action'),
-                'features': detection_result.get('metrics', {})
-            })
-        except Exception as e:
-            logger.error(f"Error logging alert: {e}")
-
+            try:
+                Database.log_alert({
+                    'entity_type': 'user' if username else 'ip',
+                    'entity_value': username or src_ip,
+                    'username': username,
+                    'src_ip': src_ip,
+                    'alert_type': detection_result.get('detection_type'),
+                    'attack_type': detection_result.get('attack_type'),
+                    'rule_name': detection_result.get('rule_triggered'),
+                    'confidence': detection_result.get('confidence'),
+                    'score': detection_result.get('ml_prediction', {}).get('score', detection_result.get('confidence', 0.0)),
+                    'risk_score': detection_result.get('risk_score'),
+                    'action': detection_result.get('action'),
+                    'action_details': detection_result.get('block_reason'),
+                    'features': detection_result.get('metrics', {})
+                })
+            except Exception as e:
+                logger.error(f"Error logging alert: {e}")
     # Result summary line (single-line overview for demo)
     final_line = (
         f"RESULT: {'SUCCESS' if success else 'FAIL'} | "
