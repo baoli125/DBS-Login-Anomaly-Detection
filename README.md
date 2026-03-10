@@ -92,6 +92,34 @@ python scripts/run_agent.py --dataset data/test_events.ndjson --once
 python scripts/run_agent.py --dataset data/test_events.ndjson
 ```
 
+## Quick start + flowchart
+
+### Quick-start 1-liner
+
+```bash
+python scripts/setup_database.py && python scripts/run_web.py
+```
+
+### Overview flowchart
+
+```mermaid
+flowchart LR
+    A[Login request] --> B[Rule evaluation]
+    B --> C{Rule matched?}
+    C -->|Yes| D[Rule confidence]
+    C -->|No| E[ML inference]
+    D --> F[Risk aggregation]
+    E --> F
+    F --> G{Risk/ML thresholds}
+    G -->|ml >= 0.8| H[BLOCK]
+    G -->|risk > 0.85| H
+    G -->|0.6 < risk <= 0.85| I[THROTTLE / 2FA]
+    G -->|0.4 < risk <= 0.6| J[CHALLENGE]
+    G -->|otherwise| K[ALLOW]
+    E --> L[LOG: ML ALERT]
+    H --> M[LOG: BLOCKED]
+```
+
 ## Performance Results
 
 ### Rule-based vs ML Comparison
