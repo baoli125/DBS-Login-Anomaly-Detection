@@ -1,0 +1,47 @@
+{
+  "id": "R-BRUTE-RAPID",
+  "name": "Rapid Brute-force Detection",
+  "enabled": true,
+  "priority": "critical",
+  "scope": "ip",
+  "entity_key": "src_ip",
+  "window": { "type": "sliding", "seconds": 30 },
+  "condition": {
+    "type": "and",
+    "clauses": [
+      { "metric": "failed_attempts_30s", "op": ">=", "value": 10 },
+      { "metric": "attempts_per_sec_30s", "op": ">=", "value": 0.5 }
+    ]
+  },
+  "action": {
+    "type": "staged",
+    "stages": [
+      {
+        "threshold": 20,
+        "action": "alert",
+        "params": { "message": "Rapid failed attempts from IP" }
+      },
+      {
+        "threshold": 50,
+        "action": "throttle",
+        "params": { "delay_ms": 1000 }
+      },
+      {
+        "threshold": 100,
+        "action": "temp_block",
+        "params": { "duration_s": 3600 }
+      }
+    ]
+  },
+  "severity": "critical",
+  "cooldown_seconds": 0,
+  "ttl_seconds": 7200,
+  "evidence_fields": ["src_ip", "failed_attempts_30s", "attempts_per_sec_30s", "sample_requests"],
+  "test_cases": [
+    {
+      "name": "clear_attack",
+      "input": { "failed_attempts_30s": 45, "attempts_per_sec_30s": 1.5 },
+      "expected_action": "throttle"
+    }
+  ]
+}

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaglePro Document Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Additional styles for improved document layout */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .document-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: var(--first-american-blue);
+        }
+
+        .doc-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .doc-icon-large {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--first-american-light) 0%, #ffffff 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid var(--first-american-light);
+            flex-shrink: 0;
+        }
+
+        .doc-title-section {
+            flex: 1;
+        }
+
+        .doc-main-title {
+            font-weight: 600;
+            color: var(--first-american-dark);
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .doc-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--first-american-light);
+            border-radius: 8px;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .meta-value {
+            font-size: 13px;
+            color: var(--first-american-dark);
+            font-weight: 600;
+        }
+
+        .doc-description {
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .doc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .doc-actions-enhanced {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-enhanced {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-view {
+            background: var(--first-american-blue);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--first-american-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secret {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .btn-secret:hover {
+            background: linear-gradient(135deg, #5a0db5 0%, #1c68e8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .file-size {
+            background: #f1f3f4;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .panel-content-enhanced {
+            padding: 25px;
+        }
+
+        /* Quick stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--first-american-blue);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Hidden file card special styles */
+        .hidden-file-card {
+            border: 2px dashed #6a11cb;
+            background: linear-gradient(135deg, #f8f7ff 0%, #ffffff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hidden-file-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(106, 17, 203, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .secret-badge {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .special-user-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="eaglepro-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="eaglepro-logo">
+                    <h1>EaglePro</h1>
+                    <div class="tagline">First American Financial Corporation</div>
+                </div>
+                <div class="environment-badge">DEMO</div>
+            </div>
+            <div class="user-nav">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="user-avatar" alt="Avatar">
+                    <div class="user-details">
+                        <div class="user-name">{{ username }}
+                            {% if has_hidden_file %}
+                            <span class="welcome-badge">⭐ SPECIAL USER</span>
+                            {% endif %}
+                        </div>
+                        <div class="user-role">User ID: {{ user_id }}</div>
+                    </div>
+                </div>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="welcome-avatar" alt="User Avatar">
+            <div class="welcome-content">
+                <h2>Welcome to EaglePro, {{ username }}! 
+                    {% if has_hidden_file %}
+                    <span class="special-user-badge">SPECIAL ACCESS</span>
+                    {% endif %}
+                </h2>
+                <p>Secure document management and sharing platform</p>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ user_docs|length }}</div>
+                        <div class="stat-label">Your Documents</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_docs }}</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                    {% if has_hidden_file %}
+                    <div class="stat-item">
+                        <div class="stat-number">🔒</div>
+                        <div class="stat-label">Secret File</div>
+                    </div>
+                    {% endif %}
+                    {% if is_admin %}
+                    <div class="stat-item">
+                        <div class="stat-number">👑</div>
+                        <div class="stat-label">Administrator</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Alert -->
+        <div class="security-alert">
+            <div class="alert-header">
+                <div class="alert-icon">🚨</div>
+                <div class="alert-title">IDOR Vulnerability Demonstration</div>
+                <div class="alert-reference">First American Data Leak Recreation</div>
+            </div>
+            <p>This system contains the <strong>exact same vulnerability</strong> that exposed 800 million documents in the 2019 First American Data Leak.</p>
+            
+            <div class="cat-demo">
+                <img src="{{ url_for('static', filename='images/cat_with_knife.png') }}" alt="Cat with Knife" class="cat-image">
+                <p class="cat-caption"><em>"This data is as exposed as a cat with a knife!" 🐱🔪</em></p>
+            </div>
+        </div>
+
+        <!-- Your Documents Panel - Enhanced -->
+        <div class="panel">
+            <div class="panel-header legitimate">
+                <div class="panel-title">
+                    <span>📁 Your Documents</span>
+                    <div class="doc-count">{{ user_docs|length }} documents</div>
+                </div>
+            </div>
+            <div class="panel-content-enhanced">
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_docs|length }}</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">
+                            {{ user_docs|selectattr('sensitivity', 'equalto', 'Confidential')|list|length }}
+                        </div>
+                        <div class="stat-label">Confidential</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">
+                            {{ user_docs|selectattr('doc_type', 'equalto', 'Research Paper')|list|length }}
+                        </div>
+                        <div class="stat-label">Research Papers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">
+                            {{ user_docs|selectattr('doc_type', 'equalto', 'Technical Docs')|list|length }}
+                        </div>
+                        <div class="stat-label">Technical Docs</div>
+                    </div>
+                </div>
+
+                <!-- Documents Grid -->
+                {% if user_docs or has_hidden_file %}
+                <div class="documents-grid">
+                    <!-- Hidden File Card (Chỉ hiển thị cho user đặc biệt) -->
+                    {% if has_hidden_file %}
+                    <div class="document-card hidden-file-card">
+                        <div class="doc-header">
+                            <div class="doc-icon-large" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                                🔒
+                            </div>
+                            <div class="doc-title-section">
+                                <div class="doc-main-title">Secret Hidden File <span class="secret-badge">TOP SECRET</span></div>
+                                <span style="color: #6a11cb; font-weight: 600;">Exclusive Access</span>
+                            </div>
+                        </div>
+
+                        <div class="doc-meta-grid" style="background: linear-gradient(135deg, #f0ebff 0%, #e3f2ff 100%);">
+                            <div class="meta-row">
+                                <span class="meta-label">Access Level</span>
+                                <span class="meta-value" style="color: #6a11cb;">Ultra Secure</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Visibility</span>
+                                <span class="meta-value" style="color: #6a11cb;">Only You</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Encryption</span>
+                                <span class="meta-value" style="color: #6a11cb;">Private</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Status</span>
+                                <span class="meta-value" style="color: #6a11cb;">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="doc-description">
+                            Your personal encrypted space for secret notes, private thoughts, and confidential information. 
+                            Only visible to your account - not even administrators can see this content!
+                        </div>
+
+                        <div class="doc-footer">
+                            <div class="file-info">
+                                <span class="file-size" style="background: #6a11cb; color: white;">∞ SECRET</span>
+                                <span>ENCRYPTED FILE</span>
+                            </div>
+                            <div class="doc-actions-enhanced">
+                                <a href="/hidden-file" class="btn-enhanced btn-secret">
+                                    <span>Open Secret File</span>
+                                    <span>🔓</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Regular Documents -->
+                    {% for doc in user_docs %}
+                    <div class="document-card">
+                        <div class="doc-header">
+                            <div class="doc-icon-large">
+                                {% if doc.doc_type == 'Research Paper' %}📚
+                                {% elif doc.doc_type == 'Security Report' %}🔒
+                                {% elif doc.doc_type == 'Financial Report' %}💰
+                                {% elif doc.doc_type == 'Technical Docs' %}⚙️
+                                {% elif doc.doc_type == 'Music Analysis' %}🎵
+                                {% elif doc.doc_type == 'Poetry' %}📜
+                                {% elif doc.doc_type == 'Sheet Music' %}🎼
+                                {% elif doc.doc_type == 'Literary Analysis' %}📖
+                                {% else %}📄{% endif %}
+                            </div>
+                            <div class="doc-title-section">
+                                <div class="doc-main-title">{{ doc.title }}</div>
+                                <span class="sensitivity-tag sensitivity-{{ doc.sensitivity|lower }}">
+                                    {{ doc.sensitivity }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="doc-meta-grid">
+                            <div class="meta-row">
+                                <span class="meta-label">Document ID</span>
+                                <span class="meta-value">#{{ doc.id }}</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Type</span>
+                                <span class="meta-value">{{ doc.doc_type }}</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Created</span>
+                                <span class="meta-value">{{ doc.created_date }}</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Format</span>
+                                <span class="meta-value">{{ doc.file_format }}</span>
+                            </div>
+                        </div>
+
+                        <div class="doc-description">
+                            {{ doc.content[:120] }}{% if doc.content|length > 120 %}...{% endif %}
+                        </div>
+
+                        <div class="doc-footer">
+                            <div class="file-info">
+                                <span class="file-size">{{ doc.file_size }}</span>
+                                <span>{{ doc.file_format }} file</span>
+                            </div>
+                            <div class="doc-actions-enhanced">
+                                <a href="/document/{{ doc.id }}" class="btn-enhanced btn-view">
+                                    <span>View Document</span>
+                                    <span>→</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h3>No Documents Found</h3>
+                    <p>You don't have any documents in your account yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        {% if is_admin %}
+        <div class="admin-panel">
+            <div class="admin-header">
+                <div class="alert-icon">👑</div>
+                <div class="alert-title">ADMINISTRATOR CONTROL PANEL</div>
+            </div>
+            <div class="admin-content">
+                <!-- Admin Documents Quick Access -->
+                <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: var(--first-american-light); border-radius: 8px;">
+                    <a href="/admin/documents" class="btn btn-primary" style="padding: 15px 30px; font-size: 18px; font-weight: bold;">
+                        📋 VIEW ALL SYSTEM DOCUMENTS
+                    </a>
+                    <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                        Administrative access to all {{ total_docs }} documents in the system
+                    </p>
+                </div>
+
+                <div class="admin-grid">
+                    <div class="admin-section">
+                        <h4>👥 System Users ({{ all_users|length }} total)</h4>
+                        <div class="users-list">
+                            {% for user in all_users %}
+                            <div class="user-item">
+                                <img src="{{ url_for('static', filename='images/' + user.avatar) }}" class="user-avatar-small" alt="User Avatar">
+                                <div class="user-details">
+                                    <div style="font-weight: bold;">{{ user.username }}
+                                        {% if user.username in special_users %}
+                                        <span style="color: #6a11cb; font-weight: bold;"> ⭐</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="font-size: 11px; color: #666;">
+                                        ID: {{ user.id }} | {{ user.department }}
+                                        {% if user.id == user_id %}
+                                        <span style="color: var(--success); font-weight: bold;"> (You)</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="admin-section">
+                        <h4>📊 Documents Overview</h4>
+                        <div class="documents-overview">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div style="text-align: center; padding: 10px; background: #e8f5e8; border-radius: 6px;">
+                                    <div style="font-size: 18px; font-weight: bold; color: var(--success);">{{ user_docs|length }}</div>
+                                    <div style="font-size: 11px;">Your Documents</div>
+                                </div>
+                                <div style="text-align: center; padding: 10px; background: #ffe8e8; border-radius: 6px;">
+                                    <div style="font-size: 18px; font-weight: bold; color: var(--danger);">{{ total_docs - user_docs|length }}</div>
+                                    <div style="font-size: 11px;">Others' Documents</div>
+                                </div>
+                            </div>
+                            
+                            {% if has_hidden_file %}
+                            <div style="text-align: center; padding: 10px; background: linear-gradient(135deg, #f0ebff 0%, #e3f2ff 100%); border-radius: 6px; margin-bottom: 15px;">
+                                <div style="font-size: 18px; font-weight: bold; color: #6a11cb;">🔒</div>
+                                <div style="font-size: 11px; color: #6a11cb;">You have secret file access</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                                <strong>Recent Documents in System:</strong>
+                            </div>
+                            
+                            {% for doc in all_docs[:5] %}
+                            <div class="doc-overview-item">
+                                <div class="doc-overview-title">{{ doc.title }}</div>
+                                <div class="doc-overview-meta">
+                                    ID: {{ doc.id }} | User: {{ doc.user_id }} | Type: {{ doc.doc_type }}
+                                    {% if doc.user_id == user_id %}
+                                    <span style="color: var(--success); font-weight: bold;"> (Yours)</span>
+                                    {% else %}
+                                    <span style="color: var(--danger);"> (User {{ doc.user_id }})</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if all_docs|length > 5 %}
+                            <div style="text-align: center; padding: 10px;">
+                                <a href="/admin/documents" class="btn btn-primary" style="font-size: 12px; padding: 5px 15px;">
+                                    View All {{ total_docs }} Documents
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Vulnerability Explanation -->
+        <div class="explanation-section">
+            <h3>🔍 Understanding the First American Vulnerability</h3>
+            <div class="explanation-grid">
+                <div class="explanation-card">
+                    <h4>What is IDOR?</h4>
+                    <p>Insecure Direct Object Reference occurs when an application uses user-supplied input to access objects directly without proper authorization checks.</p>
+                </div>
+                <div class="explanation-card">
+                    <h4>First American Impact</h4>
+                    <p>In 2019, this exact vulnerability exposed 800+ million title and escrow documents containing Social Security numbers, financial records, and personal data.</p>
+                </div>
+                <div class="explanation-card">
+                    <h4>How to Prevent</h4>
+                    <p>Implement proper access control checks, use UUIDs instead of sequential IDs, and never trust user input for object references.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Footer -->
+        <div class="navigation-footer">
+            <p>First American EaglePro Document Portal - Security Demonstration Environment</p>
+            <div style="margin-top: 10px;">
+                {% if is_admin %}
+                <a href="/admin/documents" style="color: var(--first-american-blue); text-decoration: none; font-weight: bold; margin-right: 15px;">
+                    🔍 Admin: Access Complete Document Database
+                </a>
+                {% endif %}
+                {% if has_hidden_file %}
+                <a href="/hidden-file" style="color: #6a11cb; text-decoration: none; font-weight: bold;">
+                    🔒 Access Your Secret File
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

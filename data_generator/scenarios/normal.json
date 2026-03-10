@@ -1,0 +1,12 @@
+{
+    "name": "normal",
+    "description": "Normal business hours traffic",
+    "type": "normal",
+    "events_per_hour": 200,
+    "success_rate": 0.85,
+    "time_range": {
+        "start_hour": 9,
+        "end_hour": 17
+    },
+    "weekend_multiplier": 0.3
+}

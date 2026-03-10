@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^python scripts/run_agent\\.py --dataset data/test_events\\.ndjson --once$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

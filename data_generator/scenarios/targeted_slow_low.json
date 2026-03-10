@@ -1,0 +1,18 @@
+{
+    "name": "slow_attack",
+    "description": "Slow and low brute-force attack (hard to detect)",
+    "type": "attack",
+    "attack_type": "slow_bruteforce",
+    "duration_hours": 24,
+    "attempts_per_hour": 5,
+    "success_rate": 0.0,
+    "ip_strategy": "single",
+    "user_strategy": "multiple",
+    "pattern_characteristics": {
+        "time_between_attempts": "random_10min_60min",
+        "mimic_human": true,
+        "business_hours_only": false,
+        "session_behavior": true,
+        "avoid_bursts": true
+    }
+}

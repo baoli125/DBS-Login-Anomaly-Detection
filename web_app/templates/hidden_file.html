@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Hidden File - EaglePro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hidden-file-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .hidden-file-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .hidden-file-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hidden-file-title h1 {
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .secret-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .hidden-file-editor {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .editor-header {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-input {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--first-american-dark);
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .title-input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 2px var(--first-american-blue);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-save {
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-save.saving {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .editor-content {
+            padding: 0;
+        }
+
+        .content-textarea {
+            width: 100%;
+            min-height: 500px;
+            border: none;
+            padding: 30px;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            background: #fafbfc;
+        }
+
+        .content-textarea:focus {
+            outline: none;
+            background: white;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 10px 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .character-count {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auto-save {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--success);
+        }
+
+        .navigation-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-hints {
+            background: var(--first-american-light);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .feature-hints h3 {
+            margin-bottom: 15px;
+            color: var(--first-american-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .hint-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--first-american-blue);
+        }
+
+        .hint-item h4 {
+            margin-bottom: 8px;
+            color: var(--first-american-dark);
+        }
+
+        .hint-item p {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        /* Markdown preview styles */
+        .markdown-preview {
+            padding: 30px;
+            background: white;
+            min-height: 500px;
+            line-height: 1.6;
+        }
+
+        .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+            color: var(--first-american-dark);
+            margin-bottom: 15px;
+        }
+
+        .markdown-preview code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .markdown-preview pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--first-american-blue);
+            background: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header class="eaglepro-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="eaglepro-logo">
+                    <h1>EaglePro</h1>
+                    <div class="tagline">First American Financial Corporation</div>
+                </div>
+                <div class="environment-badge">SECRET</div>
+            </div>
+            <div class="user-nav">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="user-avatar" alt="Avatar">
+                    <div class="user-details">
+                        <div class="user-name">{{ username }}</div>
+                        <div class="user-role">Special User</div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="logout-btn">Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="hidden-file-container">
+        <!-- Header -->
+        <div class="hidden-file-header">
+            <div class="hidden-file-title">
+                <h1><i class="fas fa-lock"></i> Hidden File</h1>
+                <span class="secret-badge">TOP SECRET</span>
+            </div>
+            <p>Your personal encrypted space - Only visible to you</p>
+            <div class="file-info">
+                <span><i class="fas fa-calendar"></i> Created: {{ hidden_file.created_date }}</span>
+                <span><i class="fas fa-sync"></i> Last Modified: {{ hidden_file.last_modified }}</span>
+                <span><i class="fas fa-user-shield"></i> Owner: {{ username }}</span>
+            </div>
+        </div>
+
+        <!-- Editor Tabs -->
+        <div class="editor-tabs">
+            <div class="tab active" onclick="switchTab('edit')">
+                <i class="fas fa-edit"></i> Edit
+            </div>
+            <div class="tab" onclick="switchTab('preview')">
+                <i class="fas fa-eye"></i> Preview
+            </div>
+        </div>
+
+        <!-- Editor -->
+        <div class="hidden-file-editor">
+            <div class="editor-header">
+                <input type="text" 
+                       id="fileTitle" 
+                       class="title-input" 
+                       value="{{ hidden_file.title }}" 
+                       placeholder="Enter file title...">
+                <div class="editor-actions">
+                    <button id="saveBtn" class="btn-save">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Tab -->
+            <div class="editor-content" id="editTab">
+                <textarea id="fileContent" class="content-textarea" placeholder="Write your secret content here...">{{ hidden_file.content }}</textarea>
+            </div>
+
+            <!-- Preview Tab -->
+            <div class="editor-content" id="previewTab" style="display: none;">
+                <div class="markdown-preview" id="markdownPreview">
+                    <!-- Preview will be rendered here -->
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="character-count">
+                    <span id="charCount">0</span> characters
+                </div>
+                <div class="auto-save">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="saveStatus">All changes saved</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation-actions">
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button onclick="clearContent()" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Clear Content
+            </button>
+        </div>
+
+        <!-- Feature Hints -->
+        <div class="feature-hints">
+            <h3><i class="fas fa-lightbulb"></i> Secret File Tips</h3>
+            <div class="hints-grid">
+                <div class="hint-item">
+                    <h4>🔐 Privacy</h4>
+                    <p>This file is only visible to your account. Even admins cannot see it!</p>
+                </div>
+                <div class="hint-item">
+                    <h4>💾 Auto-save</h4>
+                    <p>Your content is automatically saved when you click the Save button.</p>
+                </div>
+                <div class="hint-item">
+                    <h4>📝 Markdown</h4>
+                    <p>Use **bold**, *italic*, and `code` formatting in your notes.</p>
+                </div>
+                <div class="hint-item">
+                    <h4>🔍 Preview</h4>
+                    <p>Switch to Preview tab to see how your markdown will look.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoSaveTimer;
+        let hasUnsavedChanges = false;
+
+        // Initialize character count
+        function updateCharCount() {
+            const content = document.getElementById('fileContent').value;
+            document.getElementById('charCount').textContent = content.length;
+            hasUnsavedChanges = true;
+            document.getElementById('saveStatus').textContent = 'Unsaved changes';
+            document.getElementById('saveStatus').style.color = '#dc3545';
+        }
+
+        // Switch between edit and preview tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('editTab').style.display = 'none';
+            document.getElementById('previewTab').style.display = 'none';
+            
+            if (tabName === 'edit') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('editTab').style.display = 'block';
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('previewTab').style.display = 'block';
+                updatePreview();
+            }
+        }
+
+        // Update markdown preview
+        function updatePreview() {
+            const content = document.getElementById('fileContent').value;
+            // Simple markdown rendering (you can enhance this)
+            let html = content
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                .replace(/`(.*)`/gim, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+            
+            document.getElementById('markdownPreview').innerHTML = html;
+        }
+
+        // Save content
+        async function saveContent() {
+            const saveBtn = document.getElementById('saveBtn');
+            const title = document.getElementById('fileTitle').value;
+            const content = document.getElementById('fileContent').value;
+            
+            saveBtn.classList.add('saving');
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                
+                const response = await fetch('/update-hidden-file', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('saveStatus').textContent = 'All changes saved';
+                    document.getElementById('saveStatus').style.color = '#28a745';
+                    hasUnsavedChanges = false;
+                    
+                    // Show success message
+                    showNotification('File saved successfully!', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                showNotification('Error saving file: ' + error.message, 'error');
+            } finally {
+                saveBtn.classList.remove('saving');
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        }
+
+        // Clear content with confirmation
+        function clearContent() {
+            if (confirm('Are you sure you want to clear all content? This cannot be undone!')) {
+                document.getElementById('fileContent').value = '';
+                document.getElementById('fileTitle').value = '🔒 My Secret File';
+                updateCharCount();
+                showNotification('Content cleared!', 'info');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+                color: white;
+                border-radius: 5px;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCharCount();
+            
+            // Event listeners
+            document.getElementById('fileContent').addEventListener('input', updateCharCount);
+            document.getElementById('saveBtn').addEventListener('click', saveContent);
+            
+            // Auto-save every 30 seconds if there are changes
+            setInterval(() => {
+                if (hasUnsavedChanges) {
+                    saveContent();
+                }
+            }, 30000);
+            
+            // Warn before leaving with unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

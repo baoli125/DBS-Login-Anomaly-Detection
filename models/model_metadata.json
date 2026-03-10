@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-03-09T10:46:03.500877Z",
+  "input_parquet": "E:\\share_Ubuntu\\eaglepro\\data\\features\\train_features.parquet",
+  "output_dir": "E:\\share_Ubuntu\\eaglepro\\models",
+  "n_samples": 30313,
+  "train_size": 21219,
+  "val_size": 4547,
+  "test_size": 4547,
+  "feature_names": [
+    "ip_attempts_1s",
+    "ip_attempts_5s",
+    "ip_attempts_30s",
+    "ip_failed_rate_30s",
+    "ip_unique_users_5m",
+    "ip_avg_interarrival_30s",
+    "user_failed_5m",
+    "user_unique_ips_5m",
+    "user_unique_ips_1h",
+    "user_success_streak",
+    "pair_attempts_5m",
+    "pair_success_rate_5m",
+    "hour_sin",
+    "hour_cos",
+    "is_business_hours"
+  ],
+  "binary_model": {
+    "best_params": {
+      "C": 0.1,
+      "penalty": "l2"
+    },
+    "metrics": {
+      "default_0_5": {
+        "threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0
+      },
+      "t_high_recall": {
+        "threshold": 0.1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0
+      },
+      "t_balanced": {
+        "threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0
+      },
+      "t_high_precision": {
+        "threshold": 0.9,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": 0.5,
+        "pr_auc": 0.0
+      },
+      "thresholds": {
+        "t_high_recall": 0.1,
+        "t_balanced": 0.5,
+        "t_high_precision": 0.9
+      }
+    }
+  },
+  "multiclass_model": {
+    "best_params": {
+      "C": 10.0
+    },
+    "metrics": {
+      "classification_report": {
+        "benign": {
+          "precision": 1.0,
+          "recall": 0.9989003738728832,
+          "f1-score": 0.9994498844757399,
+          "support": 4547.0
+        },
+        "credential_stuffing": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "distributed_attack": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "rapid_bruteforce": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "micro avg": {
+          "precision": 0.9989003738728832,
+          "recall": 0.9989003738728832,
+          "f1-score": 0.9989003738728832,
+          "support": 4547.0
+        },
+        "macro avg": {
+          "precision": 0.25,
+          "recall": 0.2497250934682208,
+          "f1-score": 0.24986247111893498,
+          "support": 4547.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 0.9989003738728832,
+          "f1-score": 0.9994498844757399,
+          "support": 4547.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          4542,
+          2,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "benign",
+        "credential_stuffing",
+        "distributed_attack",
+        "rapid_bruteforce"
+      ]
+    }
+  },
+  "label_encoding": {
+    "classes": [
+      "benign",
+      "credential_stuffing",
+      "distributed_attack",
+      "rapid_bruteforce"
+    ]
+  },
+  "artifacts": {
+    "binary_model_path": "models\\binary_model.joblib",
+    "multiclass_model_path": "models\\multiclass_model.joblib",
+    "scaler_path": "models\\scaler.joblib"
+  }
+}

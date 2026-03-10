@@ -1,0 +1,36 @@
+{
+  "id": "R-DIST-ATTACK",
+  "name": "Distributed Attack Detection",
+  "enabled": true,
+  "priority": "high",
+  "scope": "user",
+  "entity_key": "username",
+  "window": { "type": "sliding", "seconds": 300 },
+  "condition": {
+    "type": "and",
+    "clauses": [
+      { "metric": "failed_attempts_5m", "op": ">=", "value": 50 },
+      { "metric": "unique_ips", "op": ">=", "value": 8 },
+      { "metric": "success_rate", "op": "<", "value": 0.05 }
+    ]
+  },
+  "action": {
+    "type": "staged",
+    "stages": [
+      {
+        "threshold": 18,
+        "action": "alert",
+        "params": { "message": "Multiple IPs failing to access user account" }
+      },
+      {
+        "threshold": 30,
+        "action": "require_2fa",
+        "params": { "method": "email" }
+      }
+    ]
+  },
+  "severity": "high",
+  "cooldown_seconds": 0,
+  "ttl_seconds": 3600,
+  "evidence_fields": ["username", "failed_attempts_5m", "unique_ips", "success_rate"]
+}

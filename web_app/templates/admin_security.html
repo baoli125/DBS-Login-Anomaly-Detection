@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Dashboard - EaglePro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .security-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .stat-number.blocked { color: #dc3545; }
+        .stat-number.alert { color: #ffc107; }
+        .stat-number.success { color: #28a745; }
+        .stat-number.info { color: #17a2b8; }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .blocked-ip-list {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .blocked-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .blocked-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ip-address {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .block-reason {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .block-time {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .unblock-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .unblock-btn:hover {
+            background: #218838;
+        }
+        
+        .alert-list {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+        }
+        
+        .alert-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-icon {
+            font-size: 20px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .alert-critical { border-left: 4px solid #dc3545; }
+        .alert-high { border-left: 4px solid #fd7e14; }
+        .alert-medium { border-left: 4px solid #ffc107; }
+        .alert-low { border-left: 4px solid #17a2b8; }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .alert-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .detection-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .simulate-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .simulate-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-simulate {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-rapid { background: #dc3545; color: white; }
+        .btn-stuffing { background: #fd7e14; color: white; }
+        .btn-distributed { background: #17a2b8; color: white; }
+        
+        .btn-simulate:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header class="eaglepro-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="eaglepro-logo">
+                    <h1>EaglePro</h1>
+                    <div class="tagline">First American Financial Corporation</div>
+                </div>
+                <div class="environment-badge">SECURITY ADMIN</div>
+            </div>
+            <div class="user-nav">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="user-avatar" alt="Avatar">
+                    <div class="user-details">
+                        <div class="user-name">{{ username }}</div>
+                        <div class="user-role">Security Administrator</div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="logout-btn">Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="welcome-avatar" alt="Admin Avatar">
+            <div class="welcome-content">
+                <h2>🔒 Security Dashboard</h2>
+                <p>Real-time monitoring and threat detection</p>
+                
+                <!-- Detection System Status -->
+                <div class="detection-status {% if detection_initialized %}status-active{% else %}status-inactive{% endif %}">
+                    Detection System: {% if detection_initialized %}✅ ACTIVE{% else %}❌ INACTIVE{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Stats -->
+        <div class="security-stats">
+            <div class="stat-card">
+                <div class="stat-number blocked">{{ blocked_ips|length }}</div>
+                <div class="stat-label">Blocked IPs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number alert">{{ active_alerts }}</div>
+                <div class="stat-label">Active Alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number success">{{ login_stats[0].success_logins if login_stats else 0 }}</div>
+                <div class="stat-label">Successful Logins (Today)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number info">{{ login_stats[0].failed_logins if login_stats else 0 }}</div>
+                <div class="stat-label">Failed Logins (Today)</div>
+            </div>
+        </div>
+
+        <!-- Attack Simulation -->
+        {% if detection_initialized %}
+        <div class="simulate-section">
+            <h3>🧪 Simulate Attacks (Testing)</h3>
+            <p>Test the detection system by simulating different attack patterns</p>
+            
+            <div class="simulate-buttons">
+                <button class="btn-simulate btn-rapid" onclick="simulateAttack('rapid_bruteforce')">
+                    🚀 Simulate Rapid Brute-force
+                </button>
+                <button class="btn-simulate btn-stuffing" onclick="simulateAttack('credential_stuffing')">
+                    🔐 Simulate Credential Stuffing
+                </button>
+                <button class="btn-simulate btn-distributed" onclick="simulateAttack('distributed_attack')">
+                    🌐 Simulate Distributed Attack
+                </button>
+            </div>
+            
+            <div id="simulation-result" style="margin-top: 15px; display: none;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Blocked IPs -->
+        <div class="blocked-ip-list">
+            <h3>🚫 Blocked IP Addresses ({{ blocked_ips|length }})</h3>
+            
+            {% if blocked_ips %}
+                {% for ip in blocked_ips %}
+                <div class="blocked-item">
+                    <div>
+                        <div class="ip-address">{{ ip.ip_address }}</div>
+                        <div class="block-reason">Reason: {{ ip.reason }}</div>
+                        <div class="block-time">
+                            Blocked: {{ ip.blocked_at.strftime('%Y-%m-%d %H:%M') }} | 
+                            Until: {{ ip.blocked_until.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    </div>
+                    <button class="unblock-btn" onclick="unblockIP('{{ ip.ip_address }}')">
+                        Unblock
+                    </button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666; padding: 20px;">
+                    No IP addresses are currently blocked
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Recent Alerts -->
+        <div class="alert-list">
+            <h3>🚨 Recent Security Alerts ({{ alerts|length }})</h3>
+            
+            {% if alerts %}
+                {% for alert in alerts %}
+                <div class="alert-item alert-{{ alert.severity|default('medium') }}">
+                    <div class="alert-icon">
+                        {% if alert.severity == 'critical' %}🔥
+                        {% elif alert.severity == 'high' %}⚠️
+                        {% elif alert.severity == 'medium' %}📢
+                        {% else %}ℹ️{% endif %}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">
+                            {{ alert.rule_name or alert.alert_type }}
+                            <span style="font-size: 11px; color: #666; margin-left: 10px;">
+                                {{ alert.detection_time.strftime('%H:%M:%S') }}
+                            </span>
+                        </div>
+                        <div class="alert-details">
+                            Entity: {{ alert.entity_value }} | 
+                            Type: {{ alert.attack_type or 'Unknown' }} | 
+                            Action: {{ alert.action_taken }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #666; padding: 20px;">
+                    No alerts in the system
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Login Statistics -->
+        <div class="panel" style="margin-top: 25px;">
+            <div class="panel-header legitimate">
+                <div class="panel-title">
+                    <span>📈 Login Statistics (7 Days)</span>
+                </div>
+            </div>
+            <div class="panel-content" style="padding: 20px;">
+                {% if login_stats %}
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 10px; text-align: left;">Date</th>
+                            <th style="padding: 10px; text-align: center;">Total</th>
+                            <th style="padding: 10px; text-align: center;">Success</th>
+                            <th style="padding: 10px; text-align: center;">Failed</th>
+                            <th style="padding: 10px; text-align: center;">Success Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in login_stats %}
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 10px;">{{ stat.date }}</td>
+                            <td style="padding: 10px; text-align: center;">{{ stat.total_logins }}</td>
+                            <td style="padding: 10px; text-align: center; color: #28a745;">{{ stat.success_logins }}</td>
+                            <td style="padding: 10px; text-align: center; color: #dc3545;">{{ stat.failed_logins }}</td>
+                            <td style="padding: 10px; text-align: center;">
+                                {% if stat.total_logins > 0 %}
+                                    {{ (stat.success_logins / stat.total_logins * 100)|round(1) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p style="text-align: center; color: #666;">No login statistics available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate attack
+        async function simulateAttack(attackType) {
+            const resultDiv = document.getElementById('simulation-result');
+            resultDiv.innerHTML = '<div style="color: #666;">Running simulation...</div>';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/detection/simulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        attack_type: attackType,
+                        attempts: 30
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px;">
+                            <strong>✅ Simulation Complete</strong><br>
+                            Attack Type: ${data.attack_type}<br>
+                            Attempts: ${data.attempts}<br>
+                            Blocked: ${data.blocked ? 'YES 🔴' : 'NO 🟢'}<br>
+                            Alerts: ${data.alerts}
+                        </div>
+                    `;
+                    
+                    // Reload page after 2 seconds to show updated stats
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
+                            <strong>❌ Simulation Failed</strong><br>
+                            Error: ${data.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px;">
+                        <strong>❌ Network Error</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Unblock IP
+        async function unblockIP(ip) {
+            if (!confirm(`Are you sure you want to unblock ${ip}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/detection/unblock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ip: ip,
+                        reason: 'Manually unblocked by admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`IP ${ip} has been unblocked`);
+                    window.location.reload();
+                } else {
+                    alert(`Failed to unblock: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

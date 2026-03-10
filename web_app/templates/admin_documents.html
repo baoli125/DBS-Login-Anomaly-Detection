@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Documents - EaglePro</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="eaglepro-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="eaglepro-logo">
+                    <h1>EaglePro</h1>
+                    <div class="tagline">First American Financial Corporation</div>
+                </div>
+                <div class="environment-badge">ADMIN VIEW</div>
+            </div>
+            <div class="user-nav">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="user-avatar" alt="Avatar">
+                    <div class="user-details">
+                        <div class="user-name">{{ username }}</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+                <a href="/dashboard" class="logout-btn">Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="welcome-banner">
+            <img src="{{ url_for('static', filename='images/' + current_user_avatar) }}" class="welcome-avatar" alt="Admin Avatar">
+            <div class="welcome-content">
+                <h2>👑 Administrator Document View</h2>
+                <p>Complete system document overview</p>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_documents }}</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-panel">
+            <div class="admin-header">
+                <div class="alert-icon">📋</div>
+                <div class="alert-title">SYSTEM DOCUMENTS OVERVIEW</div>
+            </div>
+            <div class="admin-content">
+                <div class="panel">
+                    <div class="panel-header admin">
+                        <div class="panel-title">
+                            <span>📊 All Documents ({{ total_documents }} total)</span>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div class="documents-list">
+                            {% for doc in all_documents %}
+                            <div class="doc-item {% if doc.user_id == user_id %}legitimate{% else %}vulnerable{% endif %}">
+                                <div class="doc-icon">
+                                    {% if doc.doc_type == 'Research Paper' %}📚
+                                    {% elif doc.doc_type == 'Security Report' %}🔒
+                                    {% elif doc.doc_type == 'Financial Report' %}💰
+                                    {% elif doc.doc_type == 'Technical Docs' %}⚙️
+                                    {% else %}📄{% endif %}
+                                </div>
+                                <div class="doc-info">
+                                    <div class="doc-title">{{ doc.title }}</div>
+                                    <div class="doc-meta">
+                                        <span class="doc-id">ID: {{ doc.id }}</span>
+                                        <span class="doc-owner">Owner: {{ doc.full_name }} (ID: {{ doc.user_id }})</span>
+                                        <span class="doc-type">{{ doc.doc_type }}</span>
+                                        <span class="sensitivity-tag sensitivity-{{ doc.sensitivity|lower }}">
+                                            {{ doc.sensitivity }}
+                                        </span>
+                                        {% if doc.user_id != user_id %}
+                                        <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px;">
+                                            CROSS-USER
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="doc-actions">
+                                    <a href="/document/{{ doc.id }}" class="btn btn-primary">View</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

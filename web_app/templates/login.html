@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First American EaglePro - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .main-login-container {
+            display: flex;
+            gap: 30px;
+            max-width: 900px;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .demo-sidebar {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .security-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn-login {
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background: #2980b9;
+        }
+
+        /* Demo User Sidebar Styles */
+        .demo-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .demo-header h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .avatar-option {
+            text-align: center;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+        }
+
+        .avatar-option:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .avatar-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #3498db;
+            margin-bottom: 10px;
+        }
+
+        .avatar-name {
+            font-size: 1.1em;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .avatar-description {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .credentials {
+            background: #e8f4fc;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+
+        .credentials div {
+            margin: 3px 0;
+        }
+
+        .click-hint {
+            font-size: 0.75em;
+            color: #3498db;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin: 15px 0;
+        }
+
+        .flash-message {
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .flash-message.error {
+            background: #e74c3c;
+            color: white;
+            border: 1px solid #c0392b;
+        }
+
+        /* Additional Info */
+        .login-footer {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        .security-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8em;
+            margin-bottom: 15px;
+        }
+
+        .hint-section {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .hint-section h4 {
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .hint-section p {
+            font-size: 0.75em;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .secret-reveal {
+            cursor: pointer;
+            color: #3498db;
+            text-decoration: underline;
+            font-size: 0.7em;
+        }
+
+        #advancedHint {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #1a252f;
+            border-radius: 5px;
+            font-size: 0.7em;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-login-container">
+        <!-- Left Side: Login Form -->
+        <div class="login-container">
+            <div class="logo">
+                <h1>🏠 EaglePro</h1>
+                <div class="subtitle">First American Financial Corporation</div>
+                <div class="security-badge">SECURE DEMO ENVIRONMENT</div>
+            </div>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                
+                <button type="submit" class="btn-login">Sign In to EaglePro</button>
+            </form>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-messages">
+                  {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="login-footer">
+                <div class="hint-section">
+                    <h4>🔍 Security Challenge</h4>
+                    <p>Có nhiều tài khoản ẩn trong hệ thống. Hãy thử khám phá!</p>
+                    <p class="secret-reveal" onclick="revealSecret()">👁️ Click để xem gợi ý (spoiler)</p>
+                    <div id="advancedHint">
+                        <p><strong>Tài khoản ẩn bao gồm:</strong></p>
+                        <ul style="text-align: left; margin-left: 15px;">
+                            <li>Tài khoản quản trị viên</li>
+                            <li>Tài khoản nhân viên các phòng ban</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Demo User -->
+        <div class="demo-sidebar">
+            <div class="demo-header">
+                <h3>🚀 Demo Account</h3>
+                <p style="font-size: 0.8em; color: #7f8c8d;">Click để tự động điền thông tin</p>
+            </div>
+
+            <div class="avatar-option" onclick="fillCredentials('user1', 'pass123')">
+                <img src="{{ url_for('static', filename='images/login_avatar.png') }}" class="avatar-img" alt="Demo User">
+                <div class="avatar-name">Demo User</div>
+                <div class="avatar-description">Basic Access Account</div>
+                <div class="credentials">
+                    <div><strong>Username:</strong> user1</div>
+                    <div><strong>Password:</strong> pass123</div>
+                </div>
+                <div class="click-hint">Click vào đây để tự động điền</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function fillCredentials(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            
+            // Thêm hiệu ứng visual feedback
+            const avatarOption = event.currentTarget;
+            avatarOption.style.background = '#d4edda';
+            avatarOption.style.borderColor = '#28a745';
+            
+            setTimeout(() => {
+                avatarOption.style.background = '#f8f9fa';
+                avatarOption.style.borderColor = 'transparent';
+            }, 1000);
+        }
+
+        function revealSecret() {
+            const hint = document.getElementById('advancedHint');
+            if (hint.style.display === 'none') {
+                hint.style.display = 'block';
+            } else {
+                hint.style.display = 'none';
+            }
+        }
+
+        // Thêm tính năng thử nghiệm mật khẩu
+        let attemptCount = 0;
+        document.querySelector('form').addEventListener('submit', function() {
+            attemptCount++;
+            if (attemptCount >= 2) {
+                setTimeout(() => {
+                    if (!document.getElementById('advancedHint').style.display || document.getElementById('advancedHint').style.display === 'none') {
+                        alert('💡 Gợi ý: Thử các username như admin, HusThi_IA, Collie_Minh, LazyBeo!');
+                    }
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
