@@ -1,0 +1,81 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/eaglepro/data/test_events.ndjson",
+  "generated_at": "2026-03-11T11:24:51.976882Z",
+  "rule_results": {
+    "total_events": 14528,
+    "attack_events": 9720,
+    "normal_events": 4808,
+    "total_alerts": 9601,
+    "true_positives": 9575,
+    "false_positives": 26,
+    "false_negatives": 145,
+    "precision": 0.997291948755338,
+    "recall": 0.9850823045267489,
+    "f1_score": 0.9911495264220278,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 2869,
+        "attack_alerts": 2867,
+        "false_positives": 2,
+        "detected_events_count": 2867,
+        "precision": 0.9993028929940746
+      },
+      "R-BRUTE-RAPID": {
+        "total_alerts": 6623,
+        "attack_alerts": 6623,
+        "false_positives": 0,
+        "detected_events_count": 6623,
+        "precision": 1.0
+      },
+      "R-DIST-ATTACK": {
+        "total_alerts": 109,
+        "attack_alerts": 85,
+        "false_positives": 24,
+        "detected_events_count": 85,
+        "precision": 0.7798165137614679
+      }
+    },
+    "attack_type_detection": {
+      "rapid_bruteforce": {
+        "total": 450,
+        "detected": 404,
+        "rate": 0.8977777777777778
+      },
+      "distributed_attack": {
+        "total": 270,
+        "detected": 220,
+        "rate": 0.8148148148148148
+      },
+      "credential_stuffing": {
+        "total": 9000,
+        "detected": 8951,
+        "rate": 0.9945555555555555
+      }
+    },
+    "processing_time": "2026-03-11T18:24:50.542746"
+  },
+  "ml_metrics": {
+    "precision": 0.9989675820772249,
+    "recall": 0.9954732510288066,
+    "f1": 0.9972173554570752,
+    "support_pos": 9720,
+    "support_neg": 4808
+  },
+  "ml_attack_type_detection": {
+    "rapid_bruteforce": {
+      "total": 450,
+      "detected": 436,
+      "rate": 0.9688888888888889
+    },
+    "distributed_attack": {
+      "total": 270,
+      "detected": 259,
+      "rate": 0.9592592592592593
+    },
+    "credential_stuffing": {
+      "total": 9000,
+      "detected": 8981,
+      "rate": 0.9978888888888889
+    }
+  }
+}

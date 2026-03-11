@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-11T10:37:23.436028Z",
+  "generated_at": "2026-03-11T15:40:41.859094Z",
   "input_parquet": "/mnt/hgfs/share_Ubuntu/eaglepro/data/features/train_features.parquet",
   "output_dir": "/mnt/hgfs/share_Ubuntu/eaglepro/models",
   "n_samples": 30313,
@@ -25,45 +25,45 @@
   ],
   "binary_model": {
     "best_params": {
-      "C": 1.0,
+      "C": 10.0,
       "penalty": "l2"
     },
     "metrics": {
       "default_0_5": {
         "threshold": 0.5,
-        "precision": 0.9945317840054683,
+        "precision": 0.9952120383036935,
         "recall": 0.9979423868312757,
-        "f1": 0.9962341663813762,
-        "roc_auc": 0.9999451569598926,
-        "pr_auc": 0.9998916223579307
+        "f1": 0.9965753424657535,
+        "roc_auc": 0.9999169583117402,
+        "pr_auc": 0.9998421049943745
       },
       "t_high_recall": {
-        "threshold": 0.6467174869060794,
-        "precision": 0.9979423868312757,
-        "recall": 0.9979423868312757,
-        "f1": 0.9979423868312757,
-        "roc_auc": 0.9999451569598926,
-        "pr_auc": 0.9998916223579307
+        "threshold": 0.8320675767871047,
+        "precision": 0.9986263736263736,
+        "recall": 0.9972565157750343,
+        "f1": 0.9979409746053534,
+        "roc_auc": 0.9999169583117402,
+        "pr_auc": 0.9998421049943745
       },
       "t_balanced": {
-        "threshold": 0.6467174869060794,
-        "precision": 0.9979423868312757,
-        "recall": 0.9979423868312757,
-        "f1": 0.9979423868312757,
-        "roc_auc": 0.9999451569598926,
-        "pr_auc": 0.9998916223579307
+        "threshold": 0.8320675767871047,
+        "precision": 0.9986263736263736,
+        "recall": 0.9972565157750343,
+        "f1": 0.9979409746053534,
+        "roc_auc": 0.9999169583117402,
+        "pr_auc": 0.9998421049943745
       },
       "t_high_precision": {
         "threshold": 1.0,
         "precision": 1.0,
-        "recall": 0.00823045267489712,
-        "f1": 0.0163265306122449,
-        "roc_auc": 0.9999451569598926,
-        "pr_auc": 0.9998916223579307
+        "recall": 0.04046639231824417,
+        "f1": 0.07778510217534608,
+        "roc_auc": 0.9999169583117402,
+        "pr_auc": 0.9998421049943745
       },
       "thresholds": {
-        "t_high_recall": 0.6467174869060794,
-        "t_balanced": 0.6467174869060794,
+        "t_high_recall": 0.8320675767871047,
+        "t_balanced": 0.8320675767871047,
         "t_high_precision": 1.0
       }
     }
@@ -76,14 +76,14 @@
       "classification_report": {
         "benign": {
           "precision": 1.0,
-          "recall": 0.9983813531887342,
-          "f1-score": 0.9991900210594524,
+          "recall": 0.9987050825509873,
+          "f1-score": 0.9993521218011013,
           "support": 3089.0
         },
         "credential_stuffing": {
-          "precision": 0.996309963099631,
+          "precision": 0.9977827050997783,
           "recall": 1.0,
-          "f1-score": 0.9981515711645101,
+          "f1-score": 0.9988901220865705,
           "support": 1350.0
         },
         "distributed_attack": {
@@ -93,31 +93,31 @@
           "support": 40.0
         },
         "rapid_bruteforce": {
-          "precision": 1.0,
+          "precision": 0.9855072463768116,
           "recall": 1.0,
-          "f1-score": 1.0,
+          "f1-score": 0.9927007299270074,
           "support": 68.0
         },
-        "accuracy": 0.9989003738728832,
+        "accuracy": 0.9991202990983066,
         "macro avg": {
-          "precision": 0.9990774907749078,
-          "recall": 0.9995953382971836,
-          "f1-score": 0.9993353980559907,
+          "precision": 0.9958224878691475,
+          "recall": 0.9996762706377469,
+          "f1-score": 0.9977357434536698,
           "support": 4547.0
         },
         "weighted avg": {
-          "precision": 0.9989044315338688,
-          "recall": 0.9989003738728832,
-          "f1-score": 0.9989009448262013,
+          "precision": 0.9991249493376564,
+          "recall": 0.9991202990983066,
+          "f1-score": 0.9991211829108222,
           "support": 4547.0
         }
       },
       "confusion_matrix": [
         [
-          3084,
-          5,
+          3085,
+          3,
           0,
-          0
+          1
         ],
         [
           0,
