@@ -40,7 +40,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
     roc_auc_score,
 )
-from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit, train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 from ..features.features import get_feature_names
@@ -70,6 +70,46 @@ def _split_time_series_indices(n_samples: int) -> Tuple[np.ndarray, np.ndarray, 
     val_idx = indices[train_end:val_end]
     test_idx = indices[val_end:]
     return train_idx, val_idx, test_idx
+
+
+def _split_stratified_indices(
+    y_labels: np.ndarray,
+    test_size: float = 0.15,
+    val_size: float = 0.15,
+    random_state: int = 42,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Stratified split into train/val/test by label distribution."""
+    n_samples = len(y_labels)
+    if n_samples < 10:
+        raise ValueError(f"Dataset too small for stratified split (n={n_samples}).")
+
+    # First split off test set
+    idx = np.arange(n_samples)
+    try:
+        train_val_idx, test_idx = train_test_split(
+            idx,
+            test_size=test_size,
+            random_state=random_state,
+            stratify=y_labels,
+        )
+    except ValueError:
+        # Fallback to time-series if stratify is not possible due class scarcity
+        return _split_time_series_indices(n_samples)
+
+    # Then split train_val into train and val using proportion of remaining
+    val_fraction = val_size / (1.0 - test_size)
+    try:
+        train_idx, val_idx = train_test_split(
+            train_val_idx,
+            test_size=val_fraction,
+            random_state=random_state,
+            stratify=y_labels[train_val_idx],
+        )
+    except ValueError:
+        # Fallback to time-series if stratify fails
+        return _split_time_series_indices(n_samples)
+
+    return np.array(train_idx), np.array(val_idx), np.array(test_idx)
 
 
 def _select_binary_thresholds(
@@ -299,7 +339,16 @@ def train_models(
     class_labels = list(label_encoder.classes_)
 
     n_samples = X.shape[0]
-    train_idx, val_idx, test_idx = _split_time_series_indices(n_samples)
+
+    if len(np.unique(y_multiclass)) > 1:
+        train_idx, val_idx, test_idx = _split_stratified_indices(
+            y_multiclass,
+            test_size=0.15,
+            val_size=0.15,
+            random_state=random_state,
+        )
+    else:
+        train_idx, val_idx, test_idx = _split_time_series_indices(n_samples)
 
     X_train, X_val, X_test = X[train_idx], X[val_idx], X[test_idx]
     y_train_bin, y_val_bin, y_test_bin = (

@@ -161,7 +161,8 @@ def cmd_all(args):
         eval_args = type('Args', (), {})()
         eval_args.dataset = test_ndjson
         eval_args.models_dir = models_dir
-        eval_args.threshold_key = getattr(args, "threshold_key", "t_balanced")
+        # if args.threshold_key was provided from CLI, use it; otherwise default to t_balanced
+        eval_args.threshold_key = getattr(args, "threshold_key", "t_balanced") or "t_balanced"
         eval_args.output_dir = "reports"
         eval_args.no_cooldown = getattr(args, "no_cooldown", True)
         eval_args.verbose = getattr(args, "verbose", False)
@@ -200,7 +201,7 @@ def main():
     p_eval = subparsers.add_parser("evaluate", help="Compare ML vs rule-based on same NDJSON dataset")
     p_eval.add_argument("--dataset", default="data/test_events.ndjson", help="NDJSON dataset path")
     p_eval.add_argument("--models-dir", default="models", help="Models directory")
-    p_eval.add_argument("--threshold-key", default="t_high_precision", choices=["t_high_recall", "t_balanced", "t_high_precision"])
+    p_eval.add_argument("--threshold-key", default="t_balanced", choices=["t_high_recall", "t_balanced", "t_high_precision"], help="Threshold key for ML binary decision")
     p_eval.add_argument("--custom-threshold", type=float, default=None, help="Override threshold (0-1)")
     p_eval.add_argument("--output-dir", default="reports", help="Report output directory")
     p_eval.add_argument("--no-cooldown", action="store_true", default=True, help="Disable rule cooldown")
@@ -214,7 +215,7 @@ def main():
     p_all.add_argument("--features-dir", default="data/features", help="Features output directory")
     p_all.add_argument("--output-dir", default="models", help="Models output directory")
     p_all.add_argument("--random-state", type=int, default=42, help="Random seed")
-    p_all.add_argument("--threshold-key", default="t_high_precision")
+    p_all.add_argument("--threshold-key", default="t_balanced", choices=["t_high_recall", "t_balanced", "t_high_precision"], help="Threshold key for ML binary decision")
     p_all.add_argument("--no-cooldown", action="store_false", dest="cooldown")
     p_all.add_argument("--verbose", action="store_true")
     p_all.add_argument("--custom-threshold", type=float, default=None)
