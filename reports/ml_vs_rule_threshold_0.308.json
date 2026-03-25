@@ -1,0 +1,45 @@
+Evaluating ML vs Rule...
+================================================================================
+ EAGLEPRO: ML vs RULE-BASED DETECTION EVALUATION
+================================================================================
+Dataset        : data/data_for_expirement_all.ndjson
+Models dir     : models
+Threshold key  : t_balanced
+Custom thr     : 0.308
+No cooldown    : True
+Verbose rules  : False
+Output dir     : reports
+
+ Loading events (NDJSON)...
+
+ Running rule-based evaluation (baseline)...
+
+ Loading ML models...
+
+ Running ML evaluation on same dataset...
+
+================================================================================
+ RULE-BASED vs ML DETECTION (BINARY)
+================================================================================
+
+[Overall metrics]
+----------------------------------------
+Rule-based Precision : 0.995
+Rule-based Recall    : 0.985
+Rule-based F1        : 0.990
+
+ML Precision         : 0.941
+ML Recall            : 0.998
+ML F1                : 0.969
+ML Threshold         : 0.308 (custom)
+
+[Detection rate by attack_type]
+----------------------------------------
+Attack Type               | Rule Detected/Total  | Rule Rate  | ML Detected/Total  | ML Rate   
+--------------------------------------------------------------------------------
+credential_stuffing       | 17908/18000          |    0.995 | 17983/18000        |    0.999
+distributed_attack        |  792/900            |    0.880 |  896/900          |    0.996
+rapid_bruteforce          |  809/900            |    0.899 |  873/900          |    0.970
+
+ Writing JSON comparison report...
+Report saved to: reports/ml_vs_rule_20260316_134509.json

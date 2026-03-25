@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 """
-Central definition of ML features used for brute-force detection & attack classification.
+Định nghĩa trung tâm của các đặc trưng ML dùng cho phát hiện brute-force và phân loại tấn công.
 
-This module FIXES the feature list (names, scopes, windows, and types) so that:
-- Offline feature builders, training scripts, and online inference can all share one schema.
-- Both binary detection (`is_attack`) and multi-class classification (`attack_type`) use
-  the same feature vector.
+Mô-đun này CỐ ĐỊNH danh sách các đặc trưng (tên, phạm vi, cửa sổ, kiểu) sao cho:
+- Offline đặc trưng builders, training scripts, and online inference can all share one schema.
+- Both binary phát hiện (`is_attack`) and multi-class classification (`attack_type`) use
+  the same đặc trưng vector.
 """
 
 from dataclasses import dataclass
@@ -15,7 +15,7 @@ from typing import Literal, Optional, Sequence
 
 
 class EntityScope(str, Enum):
-    """Logical scope for which a feature is computed."""
+    """Logical scope for which a đặc trưng is computed."""
 
     IP = "ip"
     USER = "user"
@@ -29,15 +29,15 @@ NumericDType = Literal["float32", "float64", "int32", "int64"]
 @dataclass(frozen=True)
 class FeatureSpec:
     """
-    Specification of a single feature in the ML dataset.
+    Specification of a single đặc trưng in the ML tập dữ liệu.
 
     Attributes:
-        name: Stable column name in feature DataFrame / model input.
-        scope: Which entity the feature is attached to (ip/user/pair/global).
+        name: Stable column name in đặc trưng DataFrame / model input.
+        scope: Which entity the đặc trưng is attached to (ip/user/pair/global).
         window: Sliding time window length as a string (e.g. '1s', '5s', '30s', '5m', '1h'),
-                or None for window-less / purely contextual features.
+                or None for window-less / purely contextual đặc trưng.
         dtype: Numeric dtype hint for downstream processing.
-        description: Human-readable explanation of how the feature is computed.
+        description: Human-readable explanation of how the đặc trưng is computed.
     """
 
     name: str
@@ -47,7 +47,7 @@ class FeatureSpec:
     description: str
 
 
-# === IP-based features ======================================================
+# === IP-based đặc trưng ======================================================
 
 IP_FEATURES: Sequence[FeatureSpec] = [
     FeatureSpec(
@@ -98,10 +98,104 @@ IP_FEATURES: Sequence[FeatureSpec] = [
         "over the last 30 seconds (computed from timestamps of previous attempts only; "
         "0.0 if fewer than 2 attempts).",
     ),
+    FeatureSpec(
+        name="ip_unique_geos_5m",
+        scope=EntityScope.IP,
+        window="5m",
+        dtype="int32",
+        description="Number of distinct geo locations for this src_ip in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="ip_unique_devices_5m",
+        scope=EntityScope.IP,
+        window="5m",
+        dtype="int32",
+        description="Number of distinct device fingerprints for this src_ip in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="ip_avg_request_duration_30s",
+        scope=EntityScope.IP,
+        window="30s",
+        dtype="float32",
+        description="Average request duration in ms for this src_ip over the last 30 seconds.",
+    ),
+    FeatureSpec(
+        name="ip_failed_attempts_5m",
+        scope=EntityScope.IP,
+        window="5m",
+        dtype="int32",
+        description="Number of failed login attempts from this src_ip in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="ip_velocity_1m",
+        scope=EntityScope.IP,
+        window="1m",
+        dtype="float32",
+        description="Average attempts per second from this src_ip in the last 1 minute.",
+    ),
+    FeatureSpec(
+        name="ip_failed_streak",
+        scope=EntityScope.IP,
+        window=None,
+        dtype="int32",
+        description="Number of consecutive failed attempts from this src_ip immediately before the current event.",
+    ),
+    FeatureSpec(
+        name="ip_unique_users_1m",
+        scope=EntityScope.IP,
+        window="1m",
+        dtype="int32",
+        description="Number of distinct usernames targeted by this src_ip in the last 1 minute.",
+    ),
+    FeatureSpec(
+        name="ip_min_interarrival_30s",
+        scope=EntityScope.IP,
+        window="30s",
+        dtype="float32",
+        description="Minimum time in seconds between consecutive login attempts from this src_ip "
+        "over the last 30 seconds (0.0 if fewer than 2 attempts).",
+    ),
+    FeatureSpec(
+        name="ip_std_interarrival_30s",
+        scope=EntityScope.IP,
+        window="30s",
+        dtype="float32",
+        description="Standard deviation of interarrival times for this src_ip over the last 30 seconds "
+        "(0.0 if fewer than 2 attempts).",
+    ),
+    FeatureSpec(
+        name="ip_unique_users_velocity_1m",
+        scope=EntityScope.IP,
+        window="1m",
+        dtype="float32",
+        description="Number of unique users per minute from this src_ip in the last 1 minute.",
+    ),
+    FeatureSpec(
+        name="ip_consecutive_failures_10s",
+        scope=EntityScope.IP,
+        window="10s",
+        dtype="int32",
+        description="Number of consecutive failed attempts from this src_ip in the last 10 seconds.",
+    ),
+    FeatureSpec(
+        name="ip_attempts_10s",
+        scope=EntityScope.IP,
+        window="10s",
+        dtype="int32",
+        description="Number of login attempts from this src_ip in the last 10 seconds "
+        "(excluding the current event).",
+    ),
+    FeatureSpec(
+        name="ip_failed_velocity_30s",
+        scope=EntityScope.IP,
+        window="30s",
+        dtype="float32",
+        description="Average failed attempts per second from this src_ip in the last 30 seconds.",
+    ),
 ]
 
 
-# === User-based features ====================================================
+# === User-based đặc trưng ====================================================
 
 USER_FEATURES: Sequence[FeatureSpec] = [
     FeatureSpec(
@@ -135,10 +229,75 @@ USER_FEATURES: Sequence[FeatureSpec] = [
         description="Count of consecutive successful login attempts for this username "
         "immediately before the current event (reset to 0 on failure).",
     ),
+    FeatureSpec(
+        name="user_unique_geos_5m",
+        scope=EntityScope.USER,
+        window="5m",
+        dtype="int32",
+        description="Number of distinct geo locations for this username in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="user_unique_devices_5m",
+        scope=EntityScope.USER,
+        window="5m",
+        dtype="int32",
+        description="Number of distinct device fingerprints for this username in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="user_failed_rate_5m",
+        scope=EntityScope.USER,
+        window="5m",
+        dtype="float32",
+        description="Failure rate for this username over the last 5 minutes: failed_attempts / total_attempts.",
+    ),
+    FeatureSpec(
+        name="user_attempts_velocity_5m",
+        scope=EntityScope.USER,
+        window="5m",
+        dtype="float32",
+        description="Average attempts per minute for this username in the last 5 minutes.",
+    ),
+    FeatureSpec(
+        name="user_failed_streak",
+        scope=EntityScope.USER,
+        window=None,
+        dtype="int32",
+        description="Number of consecutive failed attempts for this username immediately before the current event.",
+    ),
+    FeatureSpec(
+        name="user_unique_ips_1m",
+        scope=EntityScope.USER,
+        window="1m",
+        dtype="int32",
+        description="Number of distinct src_ip values that have attempted to log in as this "
+        "username in the last 1 minute.",
+    ),
+    FeatureSpec(
+        name="user_min_interarrival_5m",
+        scope=EntityScope.USER,
+        window="5m",
+        dtype="float32",
+        description="Minimum time in seconds between consecutive login attempts for this username "
+        "over the last 5 minutes (0.0 if fewer than 2 attempts).",
+    ),
+    FeatureSpec(
+        name="user_ip_velocity_1m",
+        scope=EntityScope.USER,
+        window="1m",
+        dtype="float32",
+        description="Number of unique IPs per minute attempting to log in as this username in the last 1 minute.",
+    ),
+    FeatureSpec(
+        name="user_consecutive_failures_10s",
+        scope=EntityScope.USER,
+        window="10s",
+        dtype="int32",
+        description="Number of consecutive failed attempts for this username in the last 10 seconds.",
+    ),
 ]
 
 
-# === IP-User pair features ==================================================
+# === IP-User pair đặc trưng ==================================================
 
 PAIR_FEATURES: Sequence[FeatureSpec] = [
     FeatureSpec(
@@ -159,7 +318,7 @@ PAIR_FEATURES: Sequence[FeatureSpec] = [
 ]
 
 
-# === Time-based / global features ==========================================
+# === Time-based / global đặc trưng ==========================================
 
 TIME_FEATURES: Sequence[FeatureSpec] = [
     FeatureSpec(
@@ -190,7 +349,7 @@ TIME_FEATURES: Sequence[FeatureSpec] = [
 
 
 # NOTE: Rule-derived flags (e.g. rule_rapid_flag, rule_cred_flag, rule_dist_flag)
-# are intentionally NOT part of the core, fixed feature list yet. They can be
+# are intentionally NOT part of the core, fixed đặc trưng list yet. They can be
 # added later as additional FeatureSpec entries without breaking this initial design.
 
 
@@ -204,7 +363,7 @@ ALL_FEATURES: Sequence[FeatureSpec] = (
 
 def get_feature_names() -> list[str]:
     """
-    Convenience helper to get the ordered list of feature column names for model input.
+    Convenience helper to get the ordered list of đặc trưng column names for model input.
     """
 
     return [f.name for f in ALL_FEATURES]

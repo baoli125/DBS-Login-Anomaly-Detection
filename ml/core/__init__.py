@@ -1,7 +1,7 @@
 """
-ML Core Package
+Gói Core ML
 
-Contains core ML functionality including training and inference.
+Chứa chức năng lõi ML bao gồm đào tạo và suy luận.
 """
 
 from .train_models import train_models

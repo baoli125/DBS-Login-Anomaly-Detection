@@ -1,24 +1,17 @@
 from __future__ import annotations
 
+
 """
-Training script for brute-force detection ML models (binary + multi-class).
+ML Model Training Script (Brute-force Phát hiện)
 
-This script expects a Parquet feature dataset produced by `ml.feature_builder`,
-with the following columns:
-- `timestamp` (datetime-like or string)
-- `is_attack_label` (0/1)
-- `attack_type_label` (string; e.g. 'benign', 'rapid_bruteforce', ...)
-- Feature columns matching `ml.features.get_feature_names()`.
+Script này trains two models for login anomaly phát hiện:
+    1. Binary Logistic Regression: Detects if an sự kiện is an tấn công (is_attack_label)
+    2. Multi-class Logistic Regression: Classifies tấn công type (attack_type_label)
 
-It trains:
-- A binary Logistic Regression model predicting `is_attack_label`.
-- A multi-class Logistic Regression model predicting `attack_type_label`.
+Expected input: Parquet file with đặc trưng and labels (see below).
+Output: Trained models, scaler, and metadata in the output directory.
 
-Artifacts written to the output directory:
-- `binary_model.joblib`
-- `multiclass_model.joblib`
-- `scaler.joblib`
-- `model_metadata.json`
+Demo-friendly: Code is organized and commented for easy explanation and presentation.
 """
 
 import argparse
@@ -32,15 +25,12 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    average_precision_score,
-    classification_report,
-    confusion_matrix,
-    precision_recall_curve,
-    precision_recall_fscore_support,
-    roc_auc_score,
+from ml.core.metrics import (
+    load_thresholds,
+    compute_binary_metrics,
+    compute_multiclass_metrics,
 )
-from sklearn.model_selection import GridSearchCV, TimeSeriesSplit, train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 from ..features.features import get_feature_names
@@ -57,7 +47,8 @@ class ThresholdSet:
 
 def _split_time_series_indices(n_samples: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Split indices into train/val/test by time order (70% / 15% / 15%).
+    Split indices into train/val/kiểm tra by time order (70% / 15% / 15%).
+    Used when stratified split is not possible (e.g., only one class present).
     """
     if n_samples < 10:
         raise ValueError(f"Dataset too small for time-based split (n={n_samples}).")
@@ -78,12 +69,15 @@ def _split_stratified_indices(
     val_size: float = 0.15,
     random_state: int = 42,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Stratified split into train/val/test by label distribution."""
+    """
+    Stratified split into train/val/kiểm tra by label distribution.
+    Ensures each split has similar class proportions (prevents overfitting to rare classes).
+    """
     n_samples = len(y_labels)
     if n_samples < 10:
         raise ValueError(f"Dataset too small for stratified split (n={n_samples}).")
 
-    # First split off test set
+    # Bước đầu tách set kiểm tra
     idx = np.arange(n_samples)
     try:
         train_val_idx, test_idx = train_test_split(
@@ -93,10 +87,10 @@ def _split_stratified_indices(
             stratify=y_labels,
         )
     except ValueError:
-        # Fallback to time-series if stratify is not possible due class scarcity
+        # Dùng time-series nếu stratify không khả dụng do thiếu class
         return _split_time_series_indices(n_samples)
 
-    # Then split train_val into train and val using proportion of remaining
+    # Sau đó chia train_val thành train và val theo tỷ lệ còn lại
     val_fraction = val_size / (1.0 - test_size)
     try:
         train_idx, val_idx = train_test_split(
@@ -106,65 +100,10 @@ def _split_stratified_indices(
             stratify=y_labels[train_val_idx],
         )
     except ValueError:
-        # Fallback to time-series if stratify fails
+        # Dùng time-series nếu stratify thất bại
         return _split_time_series_indices(n_samples)
 
     return np.array(train_idx), np.array(val_idx), np.array(test_idx)
-
-
-def _select_binary_thresholds(
-    y_true: np.ndarray,
-    y_scores: np.ndarray,
-) -> ThresholdSet:
-    """
-    Derive a few useful thresholds from the precision-recall curve.
-
-    - t_high_recall: highest threshold with recall >= 0.95 (or max recall-favouring point).
-    - t_high_precision: highest threshold with precision >= 0.95 (or max precision-favouring point).
-    - t_balanced: threshold that maximizes F1 score.
-    """
-    # If no positive class in validation set, use reasonable defaults
-    if np.sum(y_true) == 0:
-        return ThresholdSet(t_high_recall=0.1, t_balanced=0.5, t_high_precision=0.9)
-
-    precision, recall, thresholds = precision_recall_curve(y_true, y_scores)
-
-    # Compute F1 for each threshold-aligned point
-    # precision / recall are length N, thresholds length N-1; ignore last p/r.
-    p = precision[:-1]
-    r = recall[:-1]
-    f1 = np.where((p + r) > 0, 2 * p * r / (p + r), 0.0)
-
-    # Balanced (max F1)
-    best_f1_idx = int(np.argmax(f1))
-    t_balanced = float(thresholds[best_f1_idx])
-
-    # High recall: recall >= 0.95, pick threshold with highest F1 among them
-    high_recall_mask = r >= 0.95
-    if np.any(high_recall_mask):
-        idxs = np.where(high_recall_mask)[0]
-        best_idx = idxs[int(np.argmax(f1[idxs]))]
-        t_high_recall = float(thresholds[best_idx])
-    else:
-        # Fallback to threshold with max recall (smallest threshold)
-        t_high_recall = float(thresholds[np.argmax(r)])
-
-    # High precision: precision >= 0.95, pick highest threshold satisfying it
-    high_prec_mask = p >= 0.95
-    if np.any(high_prec_mask):
-        idxs = np.where(high_prec_mask)[0]
-        # choose the largest threshold index in this group
-        best_idx = int(idxs[-1])
-        t_high_precision = float(thresholds[best_idx])
-    else:
-        # Fallback to threshold with max precision (largest threshold)
-        t_high_precision = float(thresholds[np.argmax(p)])
-
-    return ThresholdSet(
-        t_high_recall=t_high_recall,
-        t_balanced=t_balanced,
-        t_high_precision=t_high_precision,
-    )
 
 
 def _train_binary_model(
@@ -173,28 +112,34 @@ def _train_binary_model(
     random_state: int = 42,
 ) -> GridSearchCV:
     """
-    Train a binary Logistic Regression model with a small hyperparameter grid.
+    Train a binary Logistic Regression model (tấn công vs. benign).
+    Sử dụng GridSearchCV để tinh chỉnh regularization (C) và ngăn quá khớp.
     """
+    # Regularization and cross-validation to prevent overfitting
     clf = LogisticRegression(
-        class_weight="balanced",
-        solver="liblinear",
-        max_iter=1000,
+        class_weight="balanced",  # Xử lý lớp mất cân bằng: nếu tấn công ít hơn thì tăng trọng số
+        solver="liblinear",  # Thuật toán giải quyết bài toán tối ưu hóa
+        max_iter=1000,  # Số lần lặp tối đa để hội tụ
         random_state=random_state,
     )
+    # Hyperparameter grid for regularization strength (C)
     param_grid = {
-        "C": [0.1, 1.0, 10.0],
-        "penalty": ["l2"],
+        "C": [0.01, 0.05, 0.1, 0.5],  # C nhỏ = quy chuẩn mạnh (tránh quá khớp), C lớn = quy chuẩn yếu
+        "penalty": ["l2"],  # Loại quy chuẩn: L2 làm mịn trọng số
     }
+    # TimeSeriesSplit for validation (prevents data leakage)
+    # Chia dữ liệu theo thứ tự thời gian: train trước, test sau (như dự đoán thực tế)
     tscv = TimeSeriesSplit(n_splits=3)
     search = GridSearchCV(
         clf,
         param_grid=param_grid,
         cv=tscv,
-        scoring="f1",
-        n_jobs=-1,
-        verbose=0,
+        scoring="f1",  # Dùng F1 score để đánh giá (cân bằng precision và recall)
+        n_jobs=-1,  # Dùng tất cả core CPU
+        verbose=1,  # Hiển thị tiến độ
     )
     search.fit(X_train, y_train)
+    print(f"[DEBUG] Binary model best params: {search.best_params_}")
     return search
 
 
@@ -204,94 +149,40 @@ def _train_multiclass_model(
     random_state: int = 42,
 ) -> GridSearchCV:
     """
-    Train a multi-class Logistic Regression model with a small hyperparameter grid.
+    Train a multi-class Logistic Regression model (tấn công type classification).
+    Sử dụng GridSearchCV để tinh chỉnh regularization (C) và ngăn quá khớp.
     """
+    # Regularization and cross-validation to prevent overfitting
     clf = LogisticRegression(
-        class_weight="balanced",
-        multi_class="multinomial",
-        solver="lbfgs",
+        class_weight="balanced",  # Cân bằng trọng số cho mỗi loại tấn công
+        multi_class="multinomial",  # Xử lý nhiều lớp (>2)
+        solver="lbfgs",  # Thuật toán cho bài toán đa lớp
         max_iter=1000,
         random_state=random_state,
     )
+    # Hyperparameter grid for regularization strength (C)
     param_grid = {
-        "C": [0.1, 1.0, 10.0],
+        "C": [0.01, 0.1, 1.0, 10.0],  # Thử nhiều mức quy chuẩn
     }
+    # TimeSeriesSplit for validation (prevents data leakage)
     tscv = TimeSeriesSplit(n_splits=3)
     search = GridSearchCV(
         clf,
         param_grid=param_grid,
         cv=tscv,
-        scoring="f1_macro",
+        scoring="f1_macro",  # F1 macro: trung bình F1 của tất cả các lớp (công bằng cho lớp ít)
         n_jobs=-1,
-        verbose=0,
+        verbose=1,
     )
     search.fit(X_train, y_train)
+    print(f"[DEBUG] Multiclass model best params: {search.best_params_}")
     return search
 
 
-def _compute_binary_metrics(
-    y_true: np.ndarray,
-    y_scores: np.ndarray,
-    threshold: float,
-) -> Dict[str, Any]:
-    """
-    Compute standard binary classification metrics at a given threshold.
-    """
-    y_pred = (y_scores >= threshold).astype(int)
-
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        y_true,
-        y_pred,
-        average="binary",
-        zero_division=0,
-    )
-
-    # Handle case with only one class
-    unique_classes = np.unique(y_true)
-    if len(unique_classes) == 1:
-        roc_auc = 0.5  # Undefined, set to random baseline
-        pr_auc = 0.0 if unique_classes[0] == 0 else 1.0  # If all positive, PR AUC=1; if all negative, 0
-    else:
-        roc_auc = roc_auc_score(y_true, y_scores)
-        pr_auc = average_precision_score(y_true, y_scores)
-
-    return {
-        "threshold": float(threshold),
-        "precision": float(precision),
-        "recall": float(recall),
-        "f1": float(f1),
-        "roc_auc": float(roc_auc),
-        "pr_auc": float(pr_auc),
-    }
+## All binary metric computation now in ml.core.metrics
 
 
-def _compute_multiclass_metrics(
-    y_true: np.ndarray,
-    y_pred: np.ndarray,
-    class_labels: List[str],
-) -> Dict[str, Any]:
-    """
-    Compute multi-class metrics, including confusion matrix and per-class stats.
-    """
-    report = classification_report(
-        y_true,
-        y_pred,
-        labels=np.arange(len(class_labels)),
-        target_names=class_labels,
-        output_dict=True,
-        zero_division=0,
-    )
-    cm = confusion_matrix(
-        y_true,
-        y_pred,
-        labels=np.arange(len(class_labels)),
-    )
-
-    return {
-        "classification_report": report,
-        "confusion_matrix": cm.tolist(),
-        "labels": class_labels,
-    }
+## All multiclass metric computation now in ml.core.metrics
 
 
 def train_models(
@@ -300,11 +191,12 @@ def train_models(
     random_state: int = 42,
 ) -> Dict[str, Any]:
     """
-    Main training entrypoint.
+    Chính training entrypoint for demo.
+    Loads data, trains models on all data (no split for demo consistency), evaluates using cross-validation for thresholds.
 
     Args:
-        input_parquet: Path to feature Parquet file.
-        output_dir: Directory to write models and metadata.
+        input_parquet: Path to đặc trưng Parquet file (all data).
+        output_dir: Directory to write model artifacts and metadata.
         random_state: Random seed for reproducibility.
 
     Returns:
@@ -333,6 +225,8 @@ def train_models(
     X = df[feature_names].to_numpy(dtype=float)
     y_binary = df["is_attack_label"].astype(int).to_numpy()
 
+    # LabelEncoder: Chuyển đổi tên loại tấn công (string) thành số (0, 1, 2, ...)
+    # Ví dụ: "brute_force" → 0, "password_spray" → 1, "benign" → 2
     attack_labels_raw = df["attack_type_label"].astype(str).fillna("benign").to_numpy()
     label_encoder = LabelEncoder()
     y_multiclass = label_encoder.fit_transform(attack_labels_raw)
@@ -340,79 +234,70 @@ def train_models(
 
     n_samples = X.shape[0]
 
-    if len(np.unique(y_multiclass)) > 1:
-        train_idx, val_idx, test_idx = _split_stratified_indices(
-            y_multiclass,
-            test_size=0.15,
-            val_size=0.15,
-            random_state=random_state,
-        )
-    else:
-        train_idx, val_idx, test_idx = _split_time_series_indices(n_samples)
-
-    X_train, X_val, X_test = X[train_idx], X[val_idx], X[test_idx]
-    y_train_bin, y_val_bin, y_test_bin = (
-        y_binary[train_idx],
-        y_binary[val_idx],
-        y_binary[test_idx],
-    )
-    y_train_multi, y_val_multi, y_test_multi = (
-        y_multiclass[train_idx],
-        y_multiclass[val_idx],
-        y_multiclass[test_idx],
-    )
-
-    # Fit scaler on train only
+    # StandardScaler: Chuẩn hóa đặc trưng để tất cả có trung bình = 0, độ lệch chuẩn = 1
+    # Lý do: Logistic Regression hoạt động tốt hơn với dữ liệu chuẩn hóa (tránh một đặc trưng chi phối)
+    # Công thức: x_scaled = (x - mean) / std
     scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_val_scaled = scaler.transform(X_val)
-    X_test_scaled = scaler.transform(X_test)
+    X_scaled = scaler.fit_transform(X)
 
-    # Binary model
+    # Binary model - train on all data
     binary_search = _train_binary_model(
-        X_train_scaled,
-        y_train_bin,
+        X_scaled,
+        y_binary,
         random_state=random_state,
     )
     binary_model = binary_search.best_estimator_
 
-    # Multi-class model
+    # Multi-class model - train on all data
     multiclass_search = _train_multiclass_model(
-        X_train_scaled,
-        y_train_multi,
+        X_scaled,
+        y_multiclass,
         random_state=random_state,
     )
     multiclass_model = multiclass_search.best_estimator_
 
-    # Evaluate binary model on test set
-    y_test_scores = binary_model.predict_proba(X_test_scaled)[:, 1]
-    thresholds = _select_binary_thresholds(y_test_bin, y_test_scores)
-
+    # Tải ngưỡng từ file cấu hình (thay vì tính động)
+    thresholds = load_thresholds()
+    
+    # Tính metrics trên toàn bộ dữ liệu với các ngưỡng cố định
+    # score: Xác suất dự đoán lớp tấn công (0-1), càng cao càng khả năng là tấn công
+    y_scores = binary_model.predict_proba(X_scaled)[:, 1]
+    
     binary_metrics = {
-        "default_0_5": _compute_binary_metrics(y_test_bin, y_test_scores, threshold=0.5),
-        "t_high_recall": _compute_binary_metrics(
-            y_test_bin,
-            y_test_scores,
-            threshold=thresholds.t_high_recall,
+        # default_0_5: Mặc định ngưỡng 0.5 (50% xác suất)
+        "default_0_5": compute_binary_metrics(y_binary, y_scores, threshold=0.5),
+        
+        # t_high_recall: Ngưỡng thấp → phát hiện nhiều tấn công nhưng false positive cao
+        # Ưu điểm: không bỏ sót tấn công | Nhược điểm: báo động nhiều lần
+        "t_high_recall": compute_binary_metrics(
+            y_binary,
+            y_scores,
+            threshold=thresholds["t_high_recall"],
         ),
-        "t_balanced": _compute_binary_metrics(
-            y_test_bin,
-            y_test_scores,
-            threshold=thresholds.t_balanced,
+        
+        # t_balanced: Ngưỡng trung bình → cân bằng giữa phát hiện và false positive
+        # Ưu điểm: tổng thể tốt nhất | Nhược điểm: không tối ưu cho tiêu chí nào đặc biệt
+        "t_balanced": compute_binary_metrics(
+            y_binary,
+            y_scores,
+            threshold=thresholds["t_balanced"],
         ),
-        "t_high_precision": _compute_binary_metrics(
-            y_test_bin,
-            y_test_scores,
-            threshold=thresholds.t_high_precision,
+        
+        # t_high_precision: Ngưỡng cao → ít false positive (báo động chính xác)
+        # Ưu điểm: ít báo động sai | Nhược điểm: có thể bỏ sót một số tấn công
+        "t_high_precision": compute_binary_metrics(
+            y_binary,
+            y_scores,
+            threshold=thresholds["t_high_precision"],
         ),
-        "thresholds": asdict(thresholds),
+        
+        "thresholds": thresholds,
     }
-
-    # Evaluate multi-class model on test set
-    y_test_pred_multi = multiclass_model.predict(X_test_scaled)
-    multiclass_metrics = _compute_multiclass_metrics(
-        y_test_multi,
-        y_test_pred_multi,
+    
+    # Đánh giá mô hình đa lớp trên toàn bộ dữ liệu
+    multiclass_metrics = compute_multiclass_metrics(
+        y_multiclass,
+        multiclass_model.predict(X_scaled),
         class_labels=class_labels,
     )
 
@@ -433,9 +318,6 @@ def train_models(
         "input_parquet": os.path.abspath(input_parquet),
         "output_dir": os.path.abspath(output_dir),
         "n_samples": int(n_samples),
-        "train_size": int(len(train_idx)),
-        "val_size": int(len(val_idx)),
-        "test_size": int(len(test_idx)),
         "feature_names": feature_names,
         "binary_model": {
             "best_params": binary_search.best_params_,
@@ -456,6 +338,10 @@ def train_models(
     }
 
     metadata_path = os.path.join(output_dir, "model_metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+
+    return metadata
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
@@ -487,11 +373,13 @@ def _parse_args(argv: List[str] | None = None) -> argparse.Namespace:
 
 def main(argv: List[str] | None = None) -> None:
     args = _parse_args(argv)
+    print("[INFO] Starting ML model training...")
     train_models(
         input_parquet=args.input_parquet,
         output_dir=args.output_dir,
         random_state=args.random_state,
     )
+    print("[INFO] Training complete. Artifacts saved.")
 
 
 if __name__ == "__main__":

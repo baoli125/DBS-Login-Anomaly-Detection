@@ -1,0 +1,84 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/DBS-Login-Anomaly-Detection-main/data/test_events.ndjson",
+  "generated_at": "2026-03-16T10:31:01.870078Z",
+  "rule_results": {
+    "total_events": 6436,
+    "attack_events": 1066,
+    "normal_events": 5370,
+    "total_alerts": 298,
+    "true_positives": 297,
+    "false_positives": 1,
+    "false_negatives": 769,
+    "precision": 0.9966442953020134,
+    "recall": 0.27861163227016883,
+    "f1_score": 0.43548387096774194,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 282,
+        "attack_alerts": 281,
+        "false_positives": 1,
+        "detected_events_count": 281,
+        "precision": 0.9964539007092199
+      },
+      "R-BRUTE-RAPID": {
+        "total_alerts": 15,
+        "attack_alerts": 15,
+        "false_positives": 0,
+        "detected_events_count": 15,
+        "precision": 1.0
+      },
+      "R-DIST-ATTACK": {
+        "total_alerts": 1,
+        "attack_alerts": 1,
+        "false_positives": 0,
+        "detected_events_count": 1,
+        "precision": 1.0
+      }
+    },
+    "attack_type_detection": {
+      "credential_stuffing": {
+        "total": 711,
+        "detected": 281,
+        "rate": 0.3952180028129395
+      },
+      "distributed_attack": {
+        "total": 198,
+        "detected": 1,
+        "rate": 0.005050505050505051
+      },
+      "rapid_bruteforce": {
+        "total": 157,
+        "detected": 15,
+        "rate": 0.09554140127388536
+      }
+    },
+    "processing_time": "2026-03-16T17:31:01.587911"
+  },
+  "ml_metrics": {
+    "threshold": 0.25,
+    "precision": 0.57475317348378,
+    "recall": 0.7645403377110694,
+    "f1": 0.6561996779388084,
+    "roc_auc": 0.8747466992289175,
+    "pr_auc": 0.8222449645913043,
+    "threshold_used": 0.25,
+    "threshold_name": "custom"
+  },
+  "ml_attack_type_detection": {
+    "rapid_bruteforce": {
+      "total": 157,
+      "detected": 82,
+      "rate": 0.5222929936305732
+    },
+    "credential_stuffing": {
+      "total": 711,
+      "detected": 619,
+      "rate": 0.870604781997187
+    },
+    "distributed_attack": {
+      "total": 198,
+      "detected": 114,
+      "rate": 0.5757575757575758
+    }
+  }
+}

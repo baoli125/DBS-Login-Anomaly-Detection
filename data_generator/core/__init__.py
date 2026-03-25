@@ -1,7 +1,7 @@
 """
-Data Generator Core Package
+Gói Core Data Generator
 
-Contains core data generation functionality.
+Chứa chức năng lõi sinh dữ liệu.
 """
 
 from .generator import SimpleDataGenerator

@@ -1,5 +1,5 @@
 """
-Tích hợp Detection System vào Web App - FIXED VERSION
+Tích hợp Phát hiện System vào Web App - FIXED VERSION
 """
 
 import sys
@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# Thêm path để import detection system
+# Thêm path để import phát hiện system
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # SỬA phần import trong detection_integration.py
@@ -50,7 +50,7 @@ AGGREGATOR = None
 RULE_EVALUATOR = None
 
 def initialize_detection_system(debug_enabled=False):
-    """Khởi tạo detection system - FIXED"""
+    """Khởi tạo phát hiện system - FIXED"""
     global AGGREGATOR, RULE_EVALUATOR
     
     try:
@@ -64,7 +64,7 @@ def initialize_detection_system(debug_enabled=False):
         RULE_EVALUATOR = RuleEvaluator(debug_enabled=debug_enabled)
         print(" Rule Evaluator initialized")
         
-        # 3. Load 3 core rules
+        # 3. Tải 3 core rules
         rule_loader = RuleLoader()
         print(f" Loaded {len(rule_loader.rules)} core rules")
         
@@ -79,7 +79,7 @@ def initialize_detection_system(debug_enabled=False):
 
 def process_login_event(username: str, src_ip: str, success: bool, user_agent: str = None, debug: bool = False) -> Dict[str, Any]:
     """
-    Xử lý một sự kiện đăng nhập với detection system - FIXED
+    Xử lý một sự kiện đăng nhập với phát hiện system - FIXED
     """
     global AGGREGATOR, RULE_EVALUATOR
     
@@ -93,13 +93,13 @@ def process_login_event(username: str, src_ip: str, success: bool, user_agent: s
         'debug_info': {}
     }
     
-    # Nếu detection system không được khởi tạo
+    # Nếu phát hiện system không được khởi tạo
     if not AGGREGATOR or not RULE_EVALUATOR:
         result['detection_type'] = 'system_not_initialized'
         return result
     
     try:
-        # 1. Tạo event dictionary
+        # 1. Tạo sự kiện dictionary
         event = {
             'timestamp': datetime.now().isoformat(),
             'username': username,
@@ -145,7 +145,6 @@ def process_login_event(username: str, src_ip: str, success: bool, user_agent: s
             elif 'throttle' in action:
                 result['alert_message'] = f"⏱ Throttle: {src_ip} - {decision.rule_id}"
         
-        # 4. Lấy metrics cho debugging (nếu debug)
         if debug:
             try:
                 ip_metrics = AGGREGATOR.get_metrics_at_event_time('ip', src_ip, event)

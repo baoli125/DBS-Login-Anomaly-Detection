@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Demo ML-based brute-force attack classification.
+Demo phân loại tấn công brute-force bằng ML.
 
-This script demonstrates the multi-class ML model that classifies login events
-into attack types: benign, rapid_bruteforce, credential_stuffing, distributed_attack, targeted_slow_low.
+Script này minh hoạ mô hình ML đa lớp phân loại sự kiện đăng nhập
+thành các loại tấn công: benign, rapid_bruteforce, credential_stuffing, distributed_attack, targeted_slow_low.
 
-Usage:
+Cách dùng:
   python demo_classification.py --dataset data/test_events.ndjson --limit 10
   python demo_classification.py --event '{"timestamp":"2026-03-09T10:00:00Z","username":"user1","src_ip":"192.168.1.1","success":false}'
 """
@@ -26,13 +26,13 @@ from scripts.run_rulebase import load_ndjson
 
 
 def demo_single_event(event: Dict[str, Any]) -> None:
-    """Demo classification on a single event."""
+    """Demo phân loại trên một sự kiện."""
     print(" Single Event Classification Demo")
     print("=" * 50)
     print(f"Event: {json.dumps(event, indent=2)}")
     print()
 
-    # Build features for this event
+    # Xây dựng đặc trưng for this sự kiện
     events = [event]
     df_features = build_features_from_events(events)
 
@@ -40,9 +40,9 @@ def demo_single_event(event: Dict[str, Any]) -> None:
         print(" No features could be built from this event.")
         return
 
-    # Get feature dict
+    # Get đặc trưng dict
     feature_dict = df_features.iloc[0].to_dict()
-    # Remove non-feature columns
+    # Remove non-đặc trưng columns
     for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
         feature_dict.pop(col, None)
 
@@ -70,14 +70,14 @@ def demo_single_event(event: Dict[str, Any]) -> None:
 
 
 def demo_dataset_classification(dataset_path: str, limit: int = 10) -> None:
-    """Demo classification on a dataset."""
+    """Demo phân loại trên tập dữ liệu."""
     print(" Dataset Classification Demo")
     print("=" * 50)
     print(f"Dataset: {dataset_path}")
     print(f"Limit: {limit} events")
     print()
 
-    # Load events
+    # Tải events
     events = load_ndjson(dataset_path)
     if not events:
         print(" No events loaded.")
@@ -86,7 +86,7 @@ def demo_dataset_classification(dataset_path: str, limit: int = 10) -> None:
     # Limit for demo
     events = events[:limit]
 
-    # Build features
+    # Xây dựng đặc trưng
     df_features = build_features_from_events(events)
     if df_features.empty:
         print(" No features could be built.")
@@ -95,11 +95,11 @@ def demo_dataset_classification(dataset_path: str, limit: int = 10) -> None:
     print(" Classifying events...")
     print()
 
-    # Classify each event
+    # Phân loại each sự kiện
     attack_counts = {}
     for idx, row in df_features.iterrows():
         feature_dict = row.to_dict()
-        # Remove non-feature columns
+        # Remove non-đặc trưng columns
         for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
             feature_dict.pop(col, None)
 

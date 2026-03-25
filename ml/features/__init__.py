@@ -1,7 +1,7 @@
 """
-ML Features Package
+Gói Đặc trưng ML
 
-Contains feature engineering and building functionality.
+Chứa chức năng thiết kế và xây dựng đặc trưng.
 """
 
 from .features import get_feature_names, EntityScope, FeatureSpec, IP_FEATURES, USER_FEATURES, PAIR_FEATURES, TIME_FEATURES, ALL_FEATURES

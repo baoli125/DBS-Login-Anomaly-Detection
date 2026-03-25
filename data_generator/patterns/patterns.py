@@ -4,11 +4,11 @@ import json
 import os
 
 """
-Attack patterns definitions - SIMPLE VERSION
+Tấn công patterns definitions - SIMPLE VERSION
 FIXED VERSION: All patterns now have 'ip_pool' key
 """
 
-# Attack pattern configurations - COMPLETE WITH ip_pool
+# Tấn công pattern configurations - COMPLETE WITH ip_pool
 PATTERNS = {
     'normal': {
         'description': 'Normal user behavior',
@@ -80,15 +80,15 @@ PATTERNS = {
 }
 
 def get_pattern(pattern_name):
-    """Get pattern configuration"""
+    """Lấy cấu hình pattern"""
     return PATTERNS.get(pattern_name, PATTERNS['normal'])
 
 def is_attack_pattern(pattern_name):
-    """Check if pattern is an attack"""
+    """Kiểm tra pattern có phải tấn công không"""
     pattern = PATTERNS.get(pattern_name, {})
     return pattern.get('is_attack', False)
 
 def load_scenario_config(scenario_name):
-    """Load scenario from JSON file (simplified)"""
-    # This is a simplified version - in reality would load from scenarios/ folder
+    """Tải cấu hình scenario từ file JSON (đơn giản)"""
+    # Đây là phiên bản đơn giản - thực tế sẽ tải từ thư mục scenarios/
     return PATTERNS.get(scenario_name, {})

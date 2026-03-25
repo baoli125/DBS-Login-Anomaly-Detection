@@ -1,0 +1,80 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/DBS-Login-Anomaly-Detection-main/data/test_events.ndjson",
+  "generated_at": "2026-03-14T12:00:56.473541Z",
+  "rule_results": {
+    "total_events": 5938,
+    "attack_events": 1027,
+    "normal_events": 4911,
+    "total_alerts": 789,
+    "true_positives": 747,
+    "false_positives": 42,
+    "false_negatives": 280,
+    "precision": 0.9467680608365019,
+    "recall": 0.7273612463485881,
+    "f1_score": 0.8226872246696035,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 789,
+        "attack_alerts": 747,
+        "false_positives": 42,
+        "detected_events_count": 747,
+        "precision": 0.9467680608365019
+      }
+    },
+    "attack_type_detection": {
+      "targeted_slow_low": {
+        "total": 44,
+        "detected": 1,
+        "rate": 0.022727272727272728
+      },
+      "credential_stuffing": {
+        "total": 843,
+        "detected": 737,
+        "rate": 0.8742586002372479
+      },
+      "rapid_bruteforce": {
+        "total": 90,
+        "detected": 9,
+        "rate": 0.1
+      },
+      "distributed_attack": {
+        "total": 50,
+        "detected": 0,
+        "rate": 0.0
+      }
+    },
+    "processing_time": "2026-03-14T19:00:56.356326"
+  },
+  "ml_metrics": {
+    "threshold": 0.6224136163125533,
+    "precision": 0.875560538116592,
+    "recall": 0.7604673807205453,
+    "f1": 0.8139656070870245,
+    "roc_auc": 0.890903059859858,
+    "pr_auc": 0.8134260035178906,
+    "threshold_used": 0.6224136163125533,
+    "threshold_name": "t_balanced"
+  },
+  "ml_attack_type_detection": {
+    "targeted_slow_low": {
+      "total": 44,
+      "detected": 1,
+      "rate": 0.022727272727272728
+    },
+    "credential_stuffing": {
+      "total": 843,
+      "detected": 758,
+      "rate": 0.8991696322657177
+    },
+    "rapid_bruteforce": {
+      "total": 90,
+      "detected": 21,
+      "rate": 0.23333333333333334
+    },
+    "distributed_attack": {
+      "total": 50,
+      "detected": 1,
+      "rate": 0.02
+    }
+  }
+}

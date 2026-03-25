@@ -1,96 +1,96 @@
-# Agent Module
+# Mô-đun Agent
 
-The Agent module provides AI-powered response capabilities for the EaglePro brute-force detection system. It monitors events, classifies attacks, and implements automated response strategies.
+Mô-đun Agent cung cấp khả năng phản hồi được hỗ trợ bởi AI cho hệ thống phát hiện brute-force EaglePro. Nó giám sát sự kiện, phân loại tấn công và triển khai chiến lược phản hồi tự động.
 
-## Architecture
+## Kiến trúc
 
-The agent is organized into several sub-modules:
+Agent được tổ chức thành nhiều mô-đun con:
 
-- `core/`: Core agent functionality
-  - `agent.py`: Main ResponseAgent class
-  - `state.py`: Response state management
-  - `strategies.py`: Response strategy implementations
-- `processing/`: Event processing components
-  - `event_loader.py`: Event loading and filtering
-  - `classifier.py`: ML-based event classification
+- `core/`: Chức năng lõi của agent
+  - `agent.py`: Lớp ResponseAgent chính
+  - `trạng thái.py`: Quản lý trạng thái phản hồi
+  - `strategies.py`: Triển khai chiến lược phản hồi
+- `processing/`: Các thành phần xử lý sự kiện
+  - `event_loader.py`: Tải và lọc sự kiện
+  - `classifier.py`: Phân loại sự kiện dựa trên ML
 
-## Features
+## Tính năng
 
-- **Continuous Monitoring**: Real-time event monitoring with configurable intervals
-- **ML Classification**: Uses trained ML models for attack detection
-- **Automated Responses**: Implements various response strategies:
-  - IP blocking/unblocking
-  - 2FA enforcement
-  - Alert generation
-- **State Management**: Maintains response state across monitoring cycles
-- **Configurable**: Customizable response thresholds and strategies
+- **Giám sát Liên tục**: Giám sát sự kiện thời gian thực với khoảng thời gian có thể cấu hình
+- **Phân loại ML**: Sử dụng mô hình ML đã được đào tạo để phát hiện tấn công
+- **Phản hồi Tự động**: Triển khai nhiều chiến lược phản hồi:
+  - Chặn/gỡ chặn IP
+  - Thực thi 2FA
+  - Tạo cảnh báo
+- **Quản lý Trạng thái**: Duy trì trạng thái phản hồi qua các chu kỳ giám sát
+- **Có thể Cấu hình**: Ngưỡng phản hồi và chiến lược có thể tùy chỉnh
 
-## Usage
+## Cách sử dụng
 
-### Command Line
+### Dòng lệnh
 
 ```bash
-# Run continuous monitoring
+# Chạy giám sát liên tục
 python scripts/run_agent.py
 
-# Run single cycle
+# Chạy một chu kỳ
 python scripts/run_agent.py --once
 
-# Custom dataset and interval
-python scripts/run_agent.py --dataset data/custom_events.ndjson --check-interval 60
+# Tập dữ liệu và khoảng thời gian tùy chỉnh
+python scripts/run_agent.py --tập dữ liệu data/custom_events.ndjson --check-interval 60
 ```
 
-### Programmatic Usage
+### Sử dụng theo chương trình
 
 ```python
 from agent.core.agent import ResponseAgent
-from agent.core.state import ResponseState
+from agent.core.trạng thái import ResponseState
 from agent.processing.event_loader import EventLoader
 
-# Initialize components
-state = ResponseState()
-agent = ResponseAgent(state, models_dir="models")
+# Khởi tạo các thành phần
+trạng thái = ResponseState()
+agent = ResponseAgent(trạng thái, models_dir="models")
 
-# Run single cycle
+# Chạy một chu kỳ
 agent.run_once("data/test_events.ndjson")
 
-# Run continuous monitoring
+# Chạy giám sát liên tục
 agent.run_continuous("data/test_events.ndjson", check_interval=300)
 ```
 
-## Response Strategies
+## Chiến lược Phản hồi
 
-The agent implements several response strategies based on attack classification:
+Agent triển khai một số chiến lược phản hồi dựa trên phân loại tấn công:
 
-1. **IP Blocking**: Blocks IPs with high attack confidence
-2. **2FA Enforcement**: Requires 2FA for suspicious accounts
-3. **Rate Limiting**: Implements temporary rate limits
-4. **Alert Generation**: Creates alerts for security teams
+1. **Chặn IP**: Chặn các IP có độ tin cậy tấn công cao
+2. **Thực thi 2FA**: Yêu cầu 2FA cho các tài khoản đáng ngờ
+3. **Giới hạn Tốc độ**: Triển khai giới hạn tốc độ tạm thời
+4. **Tạo Cảnh báo**: Tạo cảnh báo cho đội ngũ bảo mật
 
-## Configuration
+## Cấu hình
 
-Response thresholds and strategies can be configured through the ResponseState class:
+Ngưỡng phản hồi và chiến lược có thể được cấu hình thông qua lớp ResponseState:
 
 ```python
-state = ResponseState(
-    block_threshold=0.8,      # Block IPs with confidence > 0.8
-    unblock_after=3600,       # Unblock after 1 hour
-    max_alerts_per_hour=10    # Rate limit alerts
+trạng thái = ResponseState(
+    block_threshold=0.8,      # Chặn IP với độ tin cậy > 0.8
+    unblock_after=3600,       # Gỡ chặn sau 1 giờ
+    max_alerts_per_hour=10    # Giới hạn tốc độ cảnh báo
 )
 ```
 
-## Integration
+## Tích hợp
 
-The agent integrates with:
-- ML models for classification
-- Rule-based detection system
-- Web application for real-time monitoring
-- Alert notification systems
+Agent tích hợp với:
+- Mô hình ML để phân loại
+- Hệ thống phát hiện dựa trên quy tắc
+- Ứng dụng web để giám sát thời gian thực
+- Hệ thống thông báo cảnh báo
 
-## Monitoring
+## Giám sát
 
-The agent provides monitoring capabilities:
-- Response action logging
-- Performance metrics
-- State persistence
-- Error handling and recovery
+Agent cung cấp khả năng giám sát:
+- Ghi log hành động phản hồi
+- Số liệu hiệu suất
+- Duy trì trạng thái
+- Xử lý lỗi và khôi phục

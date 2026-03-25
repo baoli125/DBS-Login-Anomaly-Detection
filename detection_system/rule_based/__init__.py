@@ -1,5 +1,5 @@
 """
-Rule-based detection system package - UPDATED
+Dựa trên quy tắc phát hiện system package - UPDATED
 """
 
 from detection_system.rule_based.aggregator import SimpleAggregator

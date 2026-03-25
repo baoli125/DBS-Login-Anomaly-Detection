@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-"""
-Compare ML-based detection vs. rule-based detection on the same NDJSON dataset.
 
-This script:
-- Loads events from an NDJSON file (same format used by the generators).
-- Runs the existing rule-based evaluation (`scripts/evaluate_rule_based_fixed.py`)
-  to obtain baseline metrics and attack-type detection rates.
-- Builds / loads ML features for the same events using `ml.feature_builder`.
-- Applies trained ML models (loaded via `ml.inference`) to compute:
-  - Overall binary detection metrics (precision / recall / F1).
-  - Detection rate per `attack_type` (focus on targeted_slow_low, etc.).
-- Prints a side-by-side comparison of rule vs ML, and optionally writes a JSON
-  report under `reports/`.
+"""
+So sánh phát hiện dựa trên ML với phát hiện dựa trên quy tắc trên cùng một tập dữ liệu NDJSON (Phiên bản DEMO)
+
+Script này:
+    1. Tải sự kiện từ NDJSON (đầu ra của run_generator.py)
+    2. Chạy đánh giá quy tắc để lấy số liệu chuẩn
+    3. Chạy đánh giá ML trên cùng tập sự kiện
+    4. In bảng so sánh song song (precision, recall, F1, phát hiện theo attack_type)
+    5. Lưu báo cáo JSON cho demo và phân tích sau (trong reports/)
+
+Được thiết kế cho demo và trình bày: đầu ra rõ ràng, số liệu dễ so sánh, và kết quả được lưu để xem lại.
 """
 
 import argparse
@@ -26,9 +25,9 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import precision_recall_fscore_support
+from ml.core.metrics import compute_binary_metrics
 
-# Ensure project root is on sys.path so we can import `scripts.*` and `ml.*`
+# Đảm bảo thư mục gốc dự án trong sys.path để có thể import `scripts.*` và `ml.*`
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -53,36 +52,7 @@ class BinaryMetrics:
     support_neg: int
 
 
-def _compute_binary_metrics(
-    y_true: np.ndarray,
-    y_pred: np.ndarray,
-) -> BinaryMetrics:
-    """
-    Compute basic binary metrics (precision/recall/F1) for ML predictions.
-    """
-    precision, recall, f1, support = precision_recall_fscore_support(
-        y_true,
-        y_pred,
-        average="binary",
-        zero_division=0,
-    )
-
-    # Also compute support for each class for reference
-    _, _, _, support_per_class = precision_recall_fscore_support(
-        y_true,
-        y_pred,
-        average=None,
-        labels=[0, 1],
-        zero_division=0,
-    )
-
-    return BinaryMetrics(
-        precision=float(precision),
-        recall=float(recall),
-        f1=float(f1),
-        support_neg=int(support_per_class[0]) if len(support_per_class) > 0 else 0,
-        support_pos=int(support_per_class[1]) if len(support_per_class) > 1 else 0,
-    )
+## All binary metric computation now in ml.core.metrics
 
 
 def _ml_detect_attack_types(
@@ -91,7 +61,7 @@ def _ml_detect_attack_types(
     y_pred: np.ndarray,
 ) -> Dict[str, Dict[str, float]]:
     """
-    Compute attack-type level detection statistics for ML predictions.
+    Compute tấn công-type level phát hiện statistics for ML predictions.
 
     Returns:
         {
@@ -167,13 +137,10 @@ def _run_ml_evaluation(
 
     y_pred = (scores >= threshold_used).astype(int)
 
-    binary_metrics = _compute_binary_metrics(y_true, y_pred)
+    binary_metrics = compute_binary_metrics(y_true, scores, threshold=threshold_used)
+    binary_metrics["threshold_used"] = threshold_used
+    binary_metrics["threshold_name"] = threshold_name
     attack_type_stats = _ml_detect_attack_types(df_features, scores, y_pred)
-
-    # Attach threshold info to metrics for reporting
-    binary_metrics.threshold_used = threshold_used  # type: ignore[attr-defined]
-    binary_metrics.threshold_name = threshold_name  # type: ignore[attr-defined]
-
     return binary_metrics, attack_type_stats
 
 
@@ -183,7 +150,7 @@ def _print_side_by_side(
     ml_attack_types: Dict[str, Dict[str, float]],
 ) -> None:
     """
-    Pretty-print comparison between rule-based and ML detection.
+    Pretty-print comparison between dựa trên quy tắc and ML phát hiện.
     """
     print("\n" + "=" * 80)
     print(" RULE-BASED vs ML DETECTION (BINARY)")
@@ -201,17 +168,17 @@ def _print_side_by_side(
     print(f"Rule-based F1        : {rule_f1:.3f}")
 
     print()
-    print(f"ML Precision         : {ml_metrics.precision:.3f}")
-    print(f"ML Recall            : {ml_metrics.recall:.3f}")
-    print(f"ML F1                : {ml_metrics.f1:.3f}")
+    print(f"ML Precision         : {ml_metrics['precision']:.3f}")
+    print(f"ML Recall            : {ml_metrics['recall']:.3f}")
+    print(f"ML F1                : {ml_metrics['f1']:.3f}")
 
     # Threshold info if available
-    threshold_name = getattr(ml_metrics, "threshold_name", "n/a")
-    threshold_used = getattr(ml_metrics, "threshold_used", None)
+    threshold_name = ml_metrics.get("threshold_name", "n/a")
+    threshold_used = ml_metrics.get("threshold_used", None)
     if threshold_used is not None:
         print(f"ML Threshold         : {threshold_used:.3f} ({threshold_name})")
 
-    # Attack-type comparison
+    # Tấn công-type comparison
     print("\n[Detection rate by attack_type]")
     print("-" * 40)
     print(
@@ -263,7 +230,7 @@ def _save_report(
         "dataset": os.path.abspath(dataset_path),
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "rule_results": rule_results,
-        "ml_metrics": asdict(ml_metrics),
+        "ml_metrics": ml_metrics,
         "ml_attack_type_detection": ml_attack_types,
     }
 
@@ -334,13 +301,13 @@ def main(argv: List[str] | None = None) -> None:
     print(f"Output dir     : {args.output_dir}")
     print()
 
-    # 1) Load events (shared input for rule-based and ML)
+    # 1) Tải events (shared input for dựa trên quy tắc and ML)
     print(" Loading events (NDJSON)...")
     events = load_ndjson(args.dataset)
     if not events:
         raise RuntimeError("No events loaded from dataset; aborting.")
 
-    # 2) Run rule-based evaluation
+    # 2) Run dựa trên quy tắc evaluation
     print("\n Running rule-based evaluation (baseline)...")
     alerts_rule, rule_results = evaluate_events(
         events,
@@ -348,7 +315,7 @@ def main(argv: List[str] | None = None) -> None:
         verbose=args.verbose,
     )
 
-    # 3) Load ML models
+    # 3) Tải ML models
     print("\n Loading ML models...")
     models = load_models(models_dir=args.models_dir, use_cache=True)
 

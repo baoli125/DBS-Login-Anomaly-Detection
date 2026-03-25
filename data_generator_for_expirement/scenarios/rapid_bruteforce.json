@@ -1,0 +1,11 @@
+{
+    "name": "rapid_bruteforce",
+    "description": "Rapid brute-force attack",
+    "type": "attack",
+    "attack_type": "rapid_bruteforce",
+    "duration_minutes": 5,
+    "attempts_per_minute": 100,
+    "success_rate": 0.01,
+    "ip_strategy": "single",
+    "user_strategy": "multiple"
+}

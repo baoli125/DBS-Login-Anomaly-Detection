@@ -1,5 +1,5 @@
 """
-Main Flask application - SIMPLIFIED VERSION
+Chính Flask application - SIMPLIFIED VERSION
 """
 
 import sys
@@ -21,7 +21,7 @@ def create_app():
                 template_folder='templates',
                 static_folder='static')
     
-    # Load config
+    # Tải cấu hình
     app.config.from_object(Config)
     
     # Secret key cho session

@@ -48,7 +48,7 @@ except ImportError:
             def get_connection():
                 return None
 
-# Import detection integration
+# Import phát hiện integration
 try:
     from web_app.detection_integration import (
         initialize_detection_system,
@@ -83,7 +83,7 @@ main_bp = Blueprint('main', __name__)
 # Danh sách user đặc biệt
 SPECIAL_USERS = ['HusThien_IA', 'Collie_Min', 'LazyBeo']
 
-# Khởi tạo detection system - SỬA: dùng biến global
+# Khởi tạo phát hiện system - SỬA: dùng biến global
 print("\n" + "="*60)
 print(" EAGLEPRO SECURITY SYSTEM STARTING...")
 print("="*60)
@@ -99,7 +99,7 @@ print("="*60 + "\n")
 
 # ==================== HELPER FUNCTIONS ====================
 def create_login_event(username: str, ip_address: str, success: bool, user_agent: str = None) -> dict:
-    """Tạo event dictionary cho login"""
+    """Tạo sự kiện dictionary cho login"""
     return {
         'timestamp': datetime.now().isoformat(),
         'username': username,
@@ -121,7 +121,7 @@ def index():
 
 @main_bp.route('/', methods=['POST'])
 def login():
-    """Xử lý login - INTEGRATED với Detection System"""
+    """Xử lý login - INTEGRATED với Phát hiện System"""
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
     
@@ -140,7 +140,7 @@ def login():
             AppDatabase.log_login(username, src_ip, False, user_agent)  # SỬA: dùng AppDatabase
             return render_template('login.html')
         
-        # 2. KIỂM TRA với Detection System (TRƯỚC khi check login)
+        # 2. KIỂM TRA với Phát hiện System (TRƯỚC khi check login)
         detection_result = process_login_event(username, src_ip, False, user_agent, debug=False)
         
         if detection_result.get('should_block'):
@@ -175,7 +175,7 @@ def login():
             session['avatar'] = user.get('avatar', 'default.png')
             session['is_admin'] = bool(user.get('is_admin', 0))
             
-            # Process successful login với detection system
+            # Process successful login với phát hiện system
             success_detection = process_login_event(username, src_ip, True, user_agent)
             
             # Nếu có alert từ successful login
@@ -191,7 +191,7 @@ def login():
             # Ghi log thất bại
             AppDatabase.log_login(username, src_ip, False, user_agent)  # SỬA
             
-            # Process failed login với detection system
+            # Process failed login với phát hiện system
             # (đã xử lý ở trên, nhưng cần cập nhật metrics)
             _ = process_login_event(username, src_ip, False, user_agent)
             
@@ -460,7 +460,7 @@ def view_document(doc_id):
 
 @main_bp.route('/api/detection/status', methods=['GET'])
 def detection_status():
-    """API lấy trạng thái detection system"""
+    """API lấy trạng thái phát hiện system"""
     return jsonify({
         'success': True,
         'detection_initialized': detection_initialized,
@@ -469,7 +469,7 @@ def detection_status():
 
 @main_bp.route('/api/detection/simulate', methods=['POST'])
 def simulate_attack():
-    """API simulate attack để test detection"""
+    """API simulate tấn công để kiểm tra phát hiện"""
     if not detection_initialized:
         return jsonify({'success': False, 'error': 'Detection system not initialized'})
     

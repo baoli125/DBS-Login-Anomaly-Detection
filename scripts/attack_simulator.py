@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-EaglePro Attack Simulator
-Demo thực tế các loại tấn công để test hệ thống phát hiện
+EaglePro Tấn công Simulator
+Demo thực tế các loại tấn công để kiểm tra hệ thống phát hiện
 """
 
 import requests
@@ -12,7 +12,7 @@ from datetime import datetime
 import sys
 import os
 
-# Add project root to path
+# Thêm thư mục gốc dự án vào path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class AttackSimulator:
@@ -30,7 +30,7 @@ class AttackSimulator:
         return random.choice(self.user_agents)
 
     def get_random_src_ip(self):
-        # Khu vực private network cho test đa IP
+        # Khu vực private network cho kiểm tra đa IP
         return f"192.168.{random.randint(0, 255)}.{random.randint(1, 254)}"
 
     def login_attempt(self, username, password, delay=0.1, src_ip=None):
@@ -72,7 +72,7 @@ class AttackSimulator:
             return False
 
     def brute_force_attack(self, target_username="admin", password_list=None, attempts=20):
-        """Demo Brute Force Attack"""
+        """Demo Brute Force Tấn công"""
         print(" BRUTE FORCE ATTACK SIMULATION")
         print("=" * 50)
         print(f"Target: {target_username}")
@@ -100,7 +100,7 @@ class AttackSimulator:
         return success_count > 0
 
     def credential_stuffing_attack(self, credentials_list=None, attempts=15):
-        """Demo Credential Stuffing Attack"""
+        """Demo Credential Stuffing Tấn công"""
         print("\n CREDENTIAL STUFFING ATTACK SIMULATION")
         print("=" * 50)
         print(f"Attempts: {attempts}")
@@ -166,7 +166,7 @@ class AttackSimulator:
         return success_count > 0
 
     def distributed_attack_simulation(self, num_ips=5, attempts_per_ip=10):
-        """Demo Distributed Attack (multiple IPs)"""
+        """Demo Distributed Tấn công (multiple IPs)"""
         print("\n DISTRIBUTED ATTACK SIMULATION")
         print("=" * 50)
         print(f"Simulated IPs: {num_ips}")
@@ -188,7 +188,7 @@ class AttackSimulator:
                 username = f"user{ip_num}"
                 password = random.choice(passwords)
 
-                # Note: In real distributed attack, each IP would be different source
+                # Note: In real distributed tấn công, each IP would be different source
                 # Here we just simulate the pattern
                 if self.login_attempt(username, password, delay=0.2):
                     total_success += 1
@@ -216,7 +216,7 @@ class AttackSimulator:
 
         print("\n Starting attack simulations...\n")
 
-        # Run different attack types
+        # Run different tấn công types
         self.brute_force_attack()
         self.credential_stuffing_attack()
         self.rapid_brute_force_attack()

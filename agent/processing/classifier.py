@@ -1,7 +1,7 @@
 """
-Event Classification Module
+Mô-đun Phân loại Sự kiện
 
-Handles ML-based classification of events.
+Xử lý phân loại dựa trên ML cho các sự kiện.
 """
 
 from typing import Dict, List, Any
@@ -11,17 +11,17 @@ from ml.features.feature_builder import build_features_from_events
 
 
 class EventClassifier:
-    """Handles ML classification of events."""
+    """Xử lý phân loại ML cho các sự kiện."""
 
     def __init__(self, models_dir: str = "models"):
         self.models_dir = models_dir
 
     def classify_events(self, events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Classify a list of events using ML models."""
+        """Phân loại danh sách các sự kiện bằng mô hình ML."""
         if not events:
             return []
 
-        # Build features
+        # Xây dựng đặc trưng
         df_features = build_features_from_events(events)
         if df_features.empty:
             return []
@@ -29,14 +29,14 @@ class EventClassifier:
         classifications = []
         for idx, row in df_features.iterrows():
             feature_dict = row.to_dict()
-            # Remove non-feature columns
+            # Loại bỏ các cột không phải đặc trưng
             for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
                 feature_dict.pop(col, None)
 
-            # Predict
+            # Dự đoán
             prediction = predict_attack_and_type(feature_dict, models_dir=self.models_dir)
 
-            # Add event info
+            # Thêm thông tin sự kiện
             event = events[idx]
             classification = {
                 'event': event,
@@ -51,12 +51,12 @@ class EventClassifier:
         return classifications
 
     def classify_single_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
-        """Classify a single event."""
+        """Phân loại một sự kiện duy nhất."""
         classifications = self.classify_events([event])
         return classifications[0] if classifications else {}
 
     def get_attack_summary(self, classifications: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Get summary statistics of classifications."""
+        """Lấy thống kê tổng hợp của các phân loại."""
         total_events = len(classifications)
         attack_events = [c for c in classifications if c['is_attack']]
 

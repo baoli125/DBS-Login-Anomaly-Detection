@@ -1,7 +1,7 @@
 """
-Classification Demo Package
+Gói Demo Phân loại
 
-Contains demo modules for classification functionality.
+Chứa các module demo cho chức năng phân loại.
 """
 
 from .single_event import SingleEventDemo

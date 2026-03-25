@@ -1,7 +1,7 @@
 """
-Data Generator Patterns Package
+Gói Pattern Data Generator
 
-Contains pattern definitions and utilities.
+Chứa định nghĩa pattern và tiện ích.
 """
 
 from .patterns import get_pattern, is_attack_pattern, load_scenario_config

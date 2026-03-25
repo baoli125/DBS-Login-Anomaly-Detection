@@ -156,7 +156,7 @@ class RuleEvaluator:
                  metrics_snapshot: Dict[str, Any],
                  raw_samples: List[Dict]) -> Decision:
         """
-        Main evaluation method
+        Chính evaluation method
         """
         entity_type = entity.get('type')
         entity_value = entity.get('value')
@@ -275,7 +275,7 @@ class RuleEvaluator:
                         user_decision._priority = rule.priority if rule else 'medium'
                         decisions.append(user_decision)
             
-            # Thêm event vào aggregator
+            # Thêm sự kiện vào aggregator
             aggregator.process_event(event)
             
             # Trả về decision có priority cao nhất

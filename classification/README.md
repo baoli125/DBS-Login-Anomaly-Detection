@@ -1,40 +1,40 @@
-# Classification Module
+# Classification Mô-đun
 
-The Classification module provides ML-based event classification capabilities for the EaglePro brute-force detection system. It includes both single event and dataset classification with comprehensive result formatting.
+The Classification mô-đun provides ML-based sự kiện classification capabilities for the EaglePro brute-force phát hiện system. It includes both single sự kiện and tập dữ liệu classification with comprehensive result formatting.
 
 ## Architecture
 
-The classification module is organized into:
+The classification mô-đun is organized into:
 
 - `core/`: Core classification functionality
   - `classifier.py`: EventClassifier for ML classification
   - `formatter.py`: ResultFormatter for output display
 - `demo/`: Demonstration modules
-  - `single_event.py`: Single event classification demo
-  - `dataset_demo.py`: Dataset classification demo
+  - `single_event.py`: Single sự kiện classification demo
+  - `dataset_demo.py`: Tập dữ liệu classification demo
 
-## Features
+## Đặc trưng
 
-- **Single Event Classification**: Classify individual events with confidence scores
-- **Dataset Classification**: Batch classify multiple events with performance metrics
+- **Single Sự kiện Classification**: Phân loại individual events with confidence scores
+- **Tập dữ liệu Classification**: Batch phân loại multiple events with performance metrics
 - **Model Support**: Supports both binary and multiclass classification models
 - **Result Formatting**: Multiple output formats (detailed, summary, JSON)
 - **Validation**: Input validation and error handling
-- **Statistics**: Dataset statistics and classification metrics
+- **Statistics**: Tập dữ liệu statistics and classification metrics
 
 ## Usage
 
 ### Command Line
 
 ```bash
-# Single event classification
-python scripts/run_classification.py single --event '{"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": false}'
+# Single sự kiện classification
+python scripts/run_classification.py single --sự kiện '{"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": false}'
 
-# Dataset classification demo
-python scripts/run_classification.py dataset --dataset data/test_events.ndjson --limit 20
+# Tập dữ liệu classification demo
+python scripts/run_classification.py tập dữ liệu --tập dữ liệu data/test_events.ndjson --limit 20
 
-# Dataset statistics
-python scripts/run_classification.py stats --dataset data/test_events.ndjson
+# Tập dữ liệu statistics
+python scripts/run_classification.py stats --tập dữ liệu data/test_events.ndjson
 ```
 
 ### Programmatic Usage
@@ -43,16 +43,16 @@ python scripts/run_classification.py stats --dataset data/test_events.ndjson
 from classification.core.classifier import EventClassifier
 from classification.core.formatter import ResultFormatter
 
-# Initialize classifier
+# Khởi tạo classifier
 classifier = EventClassifier(models_dir="models")
 formatter = ResultFormatter()
 
-# Single event classification
-event = {"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": False}
-result = classifier.classify_single_event(event)
+# Single sự kiện classification
+sự kiện = {"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": False}
+result = classifier.classify_single_event(sự kiện)
 print(formatter.format_single_result(result))
 
-# Dataset classification
+# Tập dữ liệu classification
 events = load_ndjson("data/test_events.ndjson")
 classifications, summary = classifier.classify_dataset(events, limit=100)
 print(formatter.format_dataset_results(classifications, summary))
@@ -60,34 +60,34 @@ print(formatter.format_dataset_results(classifications, summary))
 
 ## Classification Models
 
-The module supports multiple model types:
+The mô-đun supports multiple model types:
 
-- **Binary Classification**: Attack vs Benign detection
-- **Multiclass Classification**: Specific attack type identification
-- **Feature Engineering**: Automatic feature extraction from events
-- **Model Loading**: Automatic model and scaler loading
+- **Binary Classification**: Tấn công vs Benign phát hiện
+- **Multiclass Classification**: Specific tấn công type identification
+- **Đặc trưng Engineering**: Automatic đặc trưng extraction from events
+- **Model Tải**: Automatic model and scaler tải
 
 ## Output Formats
 
-### Single Event Results
+### Single Sự kiện Results
 ```
  Classification Result
 ═══════════════════════════
-Event: admin @ 192.168.1.100
-Prediction: attack (confidence: 0.92)
-Attack Type: bruteforce
-Features Used: 15
+Sự kiện: admin @ 192.168.1.100
+Prediction: tấn công (confidence: 0.92)
+Tấn công Type: bruteforce
+Đặc trưng Used: 15
 ```
 
-### Dataset Results
+### Tập dữ liệu Results
 ```
- Dataset Classification Summary
+ Tập dữ liệu Classification Summary
 ═══════════════════════════════════
 Total Events: 100
-Attack Events: 23 (23.0%)
+Tấn công Events: 23 (23.0%)
 Benign Events: 77 (77.0%)
 
-Attack Types:
+Tấn công Types:
   bruteforce: 15
   credential_stuffing: 8
 
@@ -99,24 +99,24 @@ Performance:
 
 ## Integration
 
-The classification module integrates with:
+The classification mô-đun integrates with:
 - ML training pipeline for model updates
-- Rule-based detection for hybrid approaches
+- Dựa trên quy tắc phát hiện for hybrid approaches
 - Web application for real-time classification
 - Alert generation systems
 
 ## Validation
 
-The module includes comprehensive validation:
-- Event structure validation
+The mô-đun includes comprehensive validation:
+- Sự kiện structure validation
 - Model availability checks
-- Feature extraction validation
+- Đặc trưng extraction validation
 - Result consistency checks
 
 ## Error Handling
 
 Robust error handling for:
 - Missing model files
-- Invalid event data
+- Invalid sự kiện data
 - Classification failures
 - File I/O errors

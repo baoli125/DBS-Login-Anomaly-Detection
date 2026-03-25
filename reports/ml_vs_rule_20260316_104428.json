@@ -1,0 +1,84 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/DBS-Login-Anomaly-Detection-main/data/train_events.ndjson",
+  "generated_at": "2026-03-16T10:44:28.463852Z",
+  "rule_results": {
+    "total_events": 25743,
+    "attack_events": 4163,
+    "normal_events": 21580,
+    "total_alerts": 2081,
+    "true_positives": 2077,
+    "false_positives": 4,
+    "false_negatives": 2086,
+    "precision": 0.9980778471888515,
+    "recall": 0.4989190487629114,
+    "f1_score": 0.66527866752082,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 1667,
+        "attack_alerts": 1664,
+        "false_positives": 3,
+        "detected_events_count": 1664,
+        "precision": 0.9982003599280144
+      },
+      "R-BRUTE-RAPID": {
+        "total_alerts": 268,
+        "attack_alerts": 268,
+        "false_positives": 0,
+        "detected_events_count": 268,
+        "precision": 1.0
+      },
+      "R-DIST-ATTACK": {
+        "total_alerts": 146,
+        "attack_alerts": 145,
+        "false_positives": 1,
+        "detected_events_count": 145,
+        "precision": 0.9931506849315068
+      }
+    },
+    "attack_type_detection": {
+      "credential_stuffing": {
+        "total": 2718,
+        "detected": 1683,
+        "rate": 0.6192052980132451
+      },
+      "rapid_bruteforce": {
+        "total": 743,
+        "detected": 224,
+        "rate": 0.30148048452220727
+      },
+      "distributed_attack": {
+        "total": 702,
+        "detected": 170,
+        "rate": 0.24216524216524216
+      }
+    },
+    "processing_time": "2026-03-16T17:44:26.547913"
+  },
+  "ml_metrics": {
+    "threshold": 0.2,
+    "precision": 0.22909606260398052,
+    "recall": 0.8931059332212347,
+    "f1": 0.3646528050215771,
+    "roc_auc": 0.8726115942177401,
+    "pr_auc": 0.8235288340843938,
+    "threshold_used": 0.2,
+    "threshold_name": "custom"
+  },
+  "ml_attack_type_detection": {
+    "distributed_attack": {
+      "total": 702,
+      "detected": 563,
+      "rate": 0.801994301994302
+    },
+    "rapid_bruteforce": {
+      "total": 743,
+      "detected": 580,
+      "rate": 0.7806191117092867
+    },
+    "credential_stuffing": {
+      "total": 2718,
+      "detected": 2575,
+      "rate": 0.9473877851361295
+    }
+  }
+}

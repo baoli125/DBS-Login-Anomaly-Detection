@@ -1,7 +1,7 @@
 """
-Single Event Demo Module
+Single Sự kiện Demo Mô-đun
 
-Handles demonstration of single event classification.
+Xử lý demonstration of single sự kiện classification.
 """
 
 import json
@@ -12,26 +12,26 @@ from classification.core.formatter import ResultFormatter
 
 
 class SingleEventDemo:
-    """Demo for classifying single events."""
+    """Demo phân loại một sự kiện."""
 
     def __init__(self, models_dir: str = "models"):
         self.classifier = EventClassifier(models_dir)
         self.formatter = ResultFormatter()
 
     def run_demo(self, event: Dict[str, Any]) -> str:
-        """Run single event classification demo."""
+        """Run single sự kiện classification demo."""
         result = self.classifier.classify_single_event(event)
         return self.formatter.format_single_event_result(result)
 
     def parse_event_from_json(self, json_str: str) -> Dict[str, Any]:
-        """Parse event from JSON string."""
+        """Phân tích sự kiện từ chuỗi JSON."""
         try:
             return json.loads(json_str)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON event: {e}")
 
     def create_sample_event(self, **kwargs) -> Dict[str, Any]:
-        """Create a sample event with default values."""
+        """Tạo một sự kiện mẫu với giá trị mặc định."""
         default_event = {
             "timestamp": "2026-03-09T10:00:00Z",
             "username": "user1",

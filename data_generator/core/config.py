@@ -1,13 +1,13 @@
-#data_generator/config.py
+#data_generator/cấu hình.py
 """
-Configuration for data generation
+Cấu hình for data generation
 Simple, hardcoded for easy debugging
 """
 
 import os
 from datetime import datetime, timedelta
 
-# Database connection (same as web app)
+# Kết nối cơ sở dữ liệu (giống web app)
 DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
@@ -16,18 +16,18 @@ DB_CONFIG = {
     'database': 'eaglepro'
 }
 
-# Output directories
+# Thư mục đầu ra
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 TRAIN_DIR = os.path.join(DATA_DIR, 'train')
 TEST_DIR = os.path.join(DATA_DIR, 'test')
 
-# Time settings
+# Cài đặt thời gian
 NOW = datetime.now()
 DEFAULT_START = NOW - timedelta(days=7)
 DEFAULT_END = NOW
 
-# User list (from database or hardcoded)
+# Danh sách user (từ database hoặc cứng trong mã)
 USERS = [
     {'id': 1, 'username': 'admin', 'is_admin': True},
     {'id': 2, 'username': 'user1', 'is_admin': False},

@@ -18,7 +18,7 @@ class TimeWindowCounter:
         self.lock = threading.RLock()
     
     def add_event(self, timestamp: datetime, data: Dict):
-        """Thêm event và tự động cleanup"""
+        """Thêm sự kiện và tự động dọn dẹp"""
         with self.lock:
             self.events.append((timestamp, data))
             # Cleanup old events
@@ -27,7 +27,7 @@ class TimeWindowCounter:
                 self.events.popleft()
     
     def get_metrics_at(self, current_time: datetime) -> Dict[str, Any]:
-        """Tính metrics tại thời điểm hiện tại (KHÔNG bao gồm event hiện tại)"""
+        """Tính metrics tại thời điểm hiện tại (KHÔNG bao gồm sự kiện hiện tại)"""
         with self.lock:
             cutoff = current_time - timedelta(seconds=self.window_seconds)
             
@@ -88,7 +88,7 @@ class EntityAggregator:
         self.lock = threading.RLock()
     
     def add_event(self, event: Dict):
-        """Thêm event vào tất cả windows"""
+        """Thêm sự kiện vào tất cả windows"""
         timestamp = self._parse_timestamp(event.get('timestamp'))
         
         with self.lock:
@@ -96,7 +96,7 @@ class EntityAggregator:
             for counter in self.windows.values():
                 counter.add_event(timestamp, event)
             
-            # Lưu event gần đây
+            # Lưu sự kiện gần đây
             self.recent_events.append({
                 'timestamp': timestamp,
                 'event': event
@@ -139,7 +139,7 @@ class EntityAggregator:
             return [e['event'] for e in list(self.recent_events)[-limit:]]
     
     def _parse_timestamp(self, timestamp) -> datetime:
-        """Parse timestamp từ nhiều định dạng"""
+        """Phân tích timestamp từ nhiều định dạng"""
         if isinstance(timestamp, datetime):
             return timestamp
         elif isinstance(timestamp, str):
@@ -153,7 +153,7 @@ class EntityAggregator:
             return datetime.now()
 
 class SimpleAggregator:
-    """Main aggregator - quản lý metrics cho tất cả entities"""
+    """Chính aggregator - quản lý metrics cho tất cả entities"""
     
     def __init__(self):
         # Storage: scope -> entity_key -> EntityAggregator
@@ -165,7 +165,7 @@ class SimpleAggregator:
         self.lock = threading.RLock()
     
     def process_event(self, event: Dict):
-        """Xử lý một event - cập nhật metrics cho tất cả scopes"""
+        """Xử lý một sự kiện - cập nhật metrics cho tất cả scopes"""
         with self.lock:
             timestamp = self._parse_timestamp(event.get('timestamp'))
             event['_processed_timestamp'] = timestamp
@@ -193,8 +193,8 @@ class SimpleAggregator:
     
     def get_metrics_at_event_time(self, scope: str, entity_key: str, event: Dict) -> Dict:
         """
-        Lấy metrics snapshot tại thời điểm của event
-        QUAN TRỌNG: Metrics KHÔNG bao gồm event hiện tại
+        Lấy metrics snapshot tại thời điểm của sự kiện
+        QUAN TRỌNG: Metrics KHÔNG bao gồm sự kiện hiện tại
         """
         with self.lock:
             aggregator = self.storage[scope].get(entity_key)
@@ -213,7 +213,7 @@ class SimpleAggregator:
             return aggregator.get_recent_events(limit)
     
     def _parse_timestamp(self, timestamp) -> datetime:
-        """Parse timestamp nhất quán"""
+        """Phân tích timestamp nhất quán"""
         if isinstance(timestamp, datetime):
             return timestamp
         elif isinstance(timestamp, str):

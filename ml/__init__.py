@@ -1,8 +1,8 @@
 """
-ML package for brute-force detection.
+Gói ML cho phát hiện brute-force.
 
-This package contains:
-- Feature definitions and building (`features/`)
+Gói này chứa:
+- Đặc trưng definitions and building (`đặc trưng/`)
 - Core ML training and inference (`core/`)
 - Evaluation utilities (`evaluation/`)
 """

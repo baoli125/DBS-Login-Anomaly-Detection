@@ -1,7 +1,7 @@
 """
-Classification Core Module
+Mô-đun Core Phân loại
 
-Contains the main classification logic and utilities.
+Chứa logic phân loại chính và các tiện ích.
 """
 
 import json
@@ -12,14 +12,14 @@ from ml.features.feature_builder import build_features_from_events
 
 
 class EventClassifier:
-    """Handles ML classification of events."""
+    """Xử lý phân loại ML cho các sự kiện."""
 
     def __init__(self, models_dir: str = "models"):
         self.models_dir = models_dir
 
     def classify_single_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
-        """Classify a single event."""
-        # Build features for this event
+        """Phân loại một sự kiện duy nhất."""
+        # Xây dựng đặc trưng cho sự kiện này
         events = [event]
         df_features = build_features_from_events(events)
 
@@ -29,13 +29,13 @@ class EventClassifier:
                 'event': event
             }
 
-        # Get feature dict
+        # Lấy dict đặc trưng
         feature_dict = df_features.iloc[0].to_dict()
-        # Remove non-feature columns
+        # Loại bỏ các cột không phải đặc trưng
         for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
             feature_dict.pop(col, None)
 
-        # Predict
+        # Dự đoán
         prediction = predict_attack_and_type(feature_dict, models_dir=self.models_dir)
 
         return {
@@ -49,11 +49,11 @@ class EventClassifier:
         }
 
     def classify_dataset(self, events: List[Dict[str, Any]], limit: int = None) -> List[Dict[str, Any]]:
-        """Classify a dataset of events."""
+        """Phân loại một tập dữ liệu các sự kiện."""
         if limit:
             events = events[:limit]
 
-        # Build features
+        # Xây dựng đặc trưng
         df_features = build_features_from_events(events)
         if df_features.empty:
             return []
@@ -63,17 +63,17 @@ class EventClassifier:
 
         for idx, row in df_features.iterrows():
             feature_dict = row.to_dict()
-            # Remove non-feature columns
+            # Remove non-đặc trưng columns
             for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
                 feature_dict.pop(col, None)
 
             prediction = predict_attack_and_type(feature_dict, models_dir=self.models_dir)
 
-            # Count predictions
+            # Đếm dự đoán
             pred_type = prediction['attack_type']
             attack_counts[pred_type] = attack_counts.get(pred_type, 0) + 1
 
-            # Add event info
+            # Thêm thông tin sự kiện
             event = events[idx]
             ground_truth = event.get('attack_type', 'benign') if event.get('is_attack') else 'benign'
 

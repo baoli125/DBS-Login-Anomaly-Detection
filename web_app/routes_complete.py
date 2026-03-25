@@ -1,6 +1,6 @@
 """
 Complete Web App Routes - Full Integration
-Tích hợp: Authentication + Detection System + Admin Dashboard
+Tích hợp: Authentication + Phát hiện System + Admin Dashboard
 """
 
 import os
@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from datetime import datetime
 import logging
 
-# Import database and detection system
+# Import database and phát hiện system
 from models_enhanced import Database
 from integration import (
     initialize_detection_system, process_login_event, 
@@ -27,7 +27,7 @@ SPECIAL_USERS = ['HusThien_IA', 'Collie_Min', 'LazyBeo']
 
 # ==================== INITIALIZATION ====================
 
-# Initialize detection system at startup
+# Khởi tạo phát hiện system at startup
 DETECTION_INITIALIZED = False
 DETECTION_DEBUG = os.getenv('DETECTION_DEBUG', 'false').lower() in ('1', 'true', 'yes')
 try:
@@ -46,7 +46,7 @@ except Exception as e:
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Login page with detection integration"""
+    """Login page with phát hiện integration"""
     
     if request.method == 'GET':
         return render_template('login.html')
@@ -76,7 +76,7 @@ def login():
     
     # ==================== DETECTION PIPELINE ====================
     
-    # 2. Process login event through detection system
+    # 2. Process login sự kiện through phát hiện system
     detection_result = None
     if DETECTION_AVAILABLE:
         try:
@@ -93,9 +93,9 @@ def login():
             else:
                 logger.debug(f" Detection result: {detection_result}")
             
-            # 3. Apply detection decision BEFORE checking credentials
+            # 3. Apply phát hiện decision BEFORE checking credentials
             if detection_result.get('should_block'):
-                # Log detection
+                # Log phát hiện
                 Database.log_alert({
                     'entity_type': 'ip',
                     'entity_value': src_ip,
@@ -154,7 +154,7 @@ def login():
         else:
             logger.debug(f" Login failed: {username} from {src_ip}")
         
-        # Run detection on failed attempt
+        # Run phát hiện on failed attempt
         if DETECTION_AVAILABLE and not detection_result:
             try:
                 detection_result = process_login_event(
@@ -186,7 +186,7 @@ def login():
     except Exception as e:
         logger.error(f"Error logging auth: {e}")
     
-    # 7. Log detection event if triggered
+    # 7. Log phát hiện sự kiện if triggered
     if detection_result and detection_result.get('detection_type') != 'none':
             try:
                 Database.log_alert({
@@ -393,7 +393,7 @@ def view_document(doc_id):
 
 @bp.route('/api/detection/status')
 def detection_status():
-    """Get detection system status"""
+    """Get phát hiện system status"""
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 403
     
@@ -534,7 +534,7 @@ def get_alert_stats_api():
 
 @bp.route('/api/stats/detection', methods=['GET'])
 def get_detection_stats_api():
-    """Get detection statistics"""
+    """Get phát hiện statistics"""
     if 'user_id' not in session or not session.get('is_admin'):
         return jsonify({'error': 'Unauthorized'}), 403
     

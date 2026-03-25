@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Agent Runner Script
+Agent Trình chạy Script
 
-Runs AI response agent for EaglePro.
+Runs AI phản hồi agent for EaglePro.
 """
 
 import sys
 import os
 from pathlib import Path
 
-# Add project root to path
+# Thêm thư mục gốc dự án vào path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 

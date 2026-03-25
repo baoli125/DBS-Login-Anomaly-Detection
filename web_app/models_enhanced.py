@@ -1,6 +1,6 @@
 """
 Enhanced Database Models - Full Integration
-Hỗ trợ: Authentication, Alerts, Blocked IPs, Detection History
+Hỗ trợ: Authentication, Alerts, Blocked IPs, Phát hiện History
 """
 
 import sys
@@ -187,11 +187,11 @@ class Database:
             sql = """
             INSERT INTO alerts 
             (alert_type, entity_type, entity_value, detection_time,
-             score, confidence, attack_type, rule_name, action_taken, action_details, features)
+             score, confidence, attack_type, rule_name, action_taken, action_details, đặc trưng)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
-            # map store: ml score in `score`, keep risk_score in features for debugging
+            # map store: ml score in `score`, keep risk_score in đặc trưng for debugging
             alert_features = alert_data.get('features', {}) or {}
             alert_features['risk_score'] = alert_data.get('risk_score', 0.0)
 
@@ -323,7 +323,7 @@ class Database:
             )
             by_type = cursor.fetchall()
             
-            # By detection type
+            # By phát hiện type
             cursor.execute(
                 'SELECT detection_type, COUNT(*) as count FROM alerts WHERE timestamp >= %s GROUP BY detection_type',
                 (since,)
@@ -511,7 +511,7 @@ class Database:
     
     @staticmethod
     def log_detection_event(event_data: dict):
-        """Log detection event for analysis"""
+        """Log phát hiện sự kiện for analysis"""
         conn = None
         try:
             conn = Database.get_connection()
@@ -520,7 +520,7 @@ class Database:
             sql = """
             INSERT INTO detection_events
             (username, src_ip, event_type, rule_triggered, ml_score, decision, 
-             action_taken, features, timestamp)
+             action_taken, đặc trưng, timestamp)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
@@ -547,7 +547,7 @@ class Database:
     
     @staticmethod
     def get_detection_events(src_ip: str = None, username: str = None, limit: int = 100):
-        """Get detection events"""
+        """Get phát hiện events"""
         conn = None
         try:
             conn = Database.get_connection()

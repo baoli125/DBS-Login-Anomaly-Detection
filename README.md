@@ -1,95 +1,95 @@
-# EaglePro: Complete Brute-Force Detection System
+# EaglePro: Complete Brute-Force Phát hiện System
 
 ## Overview
 
-EaglePro implements a complete 4-layer brute-force detection system:
+EaglePro implements a complete 4-layer brute-force phát hiện system:
 
-1. **Rule-based Detection** - Fixed rules for immediate response
-2. **ML-based Detection** - Binary classification (attack vs benign)
-3. **Attack Classification** - Multi-class ML (attack type identification)
-4. **AI Response Agent** - Automated response strategies
+1. **Dựa trên quy tắc Phát hiện** - Fixed rules for immediate phản hồi
+2. **ML-based Phát hiện** - Binary classification (tấn công vs benign)
+3. **Tấn công Classification** - Multi-class ML (tấn công type identification)
+4. **AI Phản hồi Agent** - Automated phản hồi strategies
 
 ## Architecture
 
 ```
-Login Events → Rule Engine → ML Binary → ML Multi-class → Response Agent
+Login Events → Rule Engine → ML Binary → ML Multi-class → Phản hồi Agent
      ↓            ↓            ↓            ↓              ↓
-   Raw logs    Immediate     Attack?     Attack type    Actions
-              blocking      detection   classification  (block/alert/2FA)
+   Raw logs    Immediate     Tấn công?     Tấn công type    Actions
+              blocking      phát hiện   classification  (block/alert/2FA)
 ```
 
 ## Components
 
-### 1. Rule-based Detection (`detection_system/rule_based/`)
+### 1. Dựa trên quy tắc Phát hiện (`detection_system/rule_based/`)
 
 **Rules:**
 - `rapid_bruteforce.json`: IP-level rapid attempts (>10 fails/30s, >0.5 attempts/sec)
 - `credential_stuffing.json`: Multi-user attacks from single IP (>5 users, >5 fails/5m)
 - `distributed_attack.json`: Multi-IP attacks on single user (>8 IPs, >50 fails/5m)
 
-**Features:**
+**Đặc trưng:**
 - Sliding window metrics (30s, 5m, 1h)
 - Cooldown periods (set to 0 for training)
 - Staged responses (alert → throttle → block)
 
-### 2. ML Binary Detection (`ml/`)
+### 2. ML Binary Phát hiện (`ml/`)
 
 **Model:** Logistic Regression
-**Features:** 15 sliding-window metrics (IP, user, pair scopes)
+**Đặc trưng:** 15 sliding-window metrics (IP, user, pair scopes)
 **Performance:** Precision 1.000, Recall 0.991, F1 0.995
 
-### 3. ML Attack Classification (`ml/`)
+### 3. ML Tấn công Classification (`ml/`)
 
 **Model:** Multi-class Logistic Regression
 **Classes:** benign, rapid_bruteforce, credential_stuffing, distributed_attack, targeted_slow_low
-**Performance:** 100% accuracy on test set
+**Performance:** 100% accuracy on kiểm tra set
 
-### 4. AI Response Agent (`agent/`)
+### 4. AI Phản hồi Agent (`agent/`)
 
-**Strategies:**
+**Chiến lược:**
 - `rapid_bruteforce`: Block IP for 5 minutes
-- `credential_stuffing`: Require 2FA for affected users
-- `distributed_attack`: Admin alert + 1-hour monitoring
-- `targeted_slow_low`: 2-hour monitoring only
+- `credential_stuffing`: Yêu cầu 2FA for affected users
+- `distributed_attack`: Admin alert + 1-hour giám sát
+- `targeted_slow_low`: 2-hour giám sát only
 
-**Features:**
-- Periodic monitoring (default 5 minutes)
-- State management (blocked IPs, 2FA requirements, alerts)
-- Automatic cleanup of expired responses
+**Đặc trưng:**
+- Periodic giám sát (default 5 minutes)
+- Trạng thái management (blocked IPs, 2FA requirements, alerts)
+- Automatic dọn dẹp of expired responses
 
 ## Usage
 
 ### Training Pipeline
 ```bash
-# Build features from NDJSON
-python scripts/run_ml.py build
+# Xây dựng đặc trưng from NDJSON
+python scripts/run_ml.py xây dựng
 
 # Train ML models
 python scripts/run_ml.py train
 
-# Evaluate vs rule-based
+# Evaluate vs dựa trên quy tắc
 python scripts/run_ml.py evaluate
 ```
 
 ### Classification Demo
 ```bash
-# Classify dataset
-python scripts/run_classification.py dataset --dataset data/test_events.ndjson --limit 10
+# Phân loại tập dữ liệu
+python scripts/run_classification.py tập dữ liệu --tập dữ liệu data/test_events.ndjson --limit 10
 
-# Classify single event
-python scripts/run_classification.py single --event '{"timestamp":"2026-03-09T10:00:00Z","username":"user1","src_ip":"192.168.1.1","success":false}'
+# Phân loại single sự kiện
+python scripts/run_classification.py single --sự kiện '{"timestamp":"2026-03-09T10:00:00Z","username":"user1","src_ip":"192.168.1.1","success":false}'
 
-# Dataset statistics
-python scripts/run_classification.py stats --dataset data/test_events.ndjson
+# Tập dữ liệu statistics
+python scripts/run_classification.py stats --tập dữ liệu data/test_events.ndjson
 ```
 
-### AI Response Agent
+### AI Phản hồi Agent
 ```bash
-# Run once on test data
-python scripts/run_agent.py --dataset data/test_events.ndjson --once
+# Run once on kiểm tra data
+python scripts/run_agent.py --tập dữ liệu data/test_events.ndjson --once
 
-# Continuous monitoring (every 5 minutes)
-python scripts/run_agent.py --dataset data/test_events.ndjson
+# Continuous giám sát (every 5 minutes)
+python scripts/run_agent.py --tập dữ liệu data/test_events.ndjson
 ```
 
 ## Quick start + flowchart
@@ -122,32 +122,32 @@ flowchart LR
 
 ## Performance Results
 
-### Rule-based vs ML Comparison
-| Metric | Rule-based | ML Binary | ML Multi-class |
+### Dựa trên quy tắc vs ML Comparison
+| Metric | Dựa trên quy tắc | ML Binary | ML Multi-class |
 |--------|------------|-----------|----------------|
 | Precision | 0.997 | 1.000 | N/A |
 | Recall | 0.985 | 0.991 | 100% |
 | F1 | 0.991 | 0.995 | N/A |
 
-### Attack Type Detection Rates
+### Tấn công Type Phát hiện Rates
 - `rapid_bruteforce`: 94.7%
 - `credential_stuffing`: 99.5%
 - `distributed_attack`: 94.4%
 
 ## Key Innovations
 
-1. **Hybrid Detection**: Rules for speed, ML for sophistication
-2. **Attack-aware Responses**: Different strategies per attack type
-3. **Stateful Agent**: Maintains response state across monitoring cycles
+1. **Hybrid Phát hiện**: Rules for speed, ML for sophistication
+2. **Tấn công-aware Responses**: Different strategies per tấn công type
+3. **Stateful Agent**: Maintains phản hồi trạng thái across giám sát cycles
 4. **Zero Cooldown Training**: Rules tuned without cooldown for better labeling
 
 ## Files Structure
 
 ```
 eaglepro/
-├── agent/                           # AI Response Agent
+├── agent/                           # AI Phản hồi Agent
 │   ├── core/                        # Core agent functionality
-│   ├── processing/                  # Event processing
+│   ├── processing/                  # Sự kiện processing
 │   └── README.md
 ├── classification/                  # ML Classification demos
 │   ├── core/                        # Classification logic
@@ -155,13 +155,13 @@ eaglepro/
 │   └── README.md
 ├── data_generator/                  # Synthetic data generation
 │   ├── core/                        # Core generation logic
-│   ├── patterns/                    # Attack patterns
+│   ├── patterns/                    # Tấn công patterns
 │   ├── scenarios/                   # Scenario configurations
 │   └── README.md
 ├── detection_system/rule_based/     # Rule engine
 ├── ml/                              # ML models & training
 │   ├── core/                        # Training and inference
-│   ├── features/                    # Feature engineering
+│   ├── đặc trưng/                    # Đặc trưng engineering
 │   ├── evaluation/                  # Evaluation utilities
 │   └── README.md
 ├── scripts/                         # Training & evaluation scripts
@@ -178,8 +178,8 @@ eaglepro/
 - User behavior modeling
 - Integration with SIEM systems
 - Adaptive threshold tuning
-4. **ML**: Build feature, train, so sánh ML vs rule bằng [scripts/run_ml.py](scripts/run_ml.py) (xem [ml/README.md](ml/README.md)).
-5. **Web**: Chạy [web_app/app.py](web_app/app.py); detection rule-based chạy real-time khi login (xem [web_app/README.md](web_app/README.md)).
+4. **ML**: Xây dựng đặc trưng, train, so sánh ML vs rule bằng [scripts/run_ml.py](scripts/run_ml.py) (xem [ml/README.md](ml/README.md)).
+5. **Web**: Chạy [web_app/app.py](web_app/app.py); phát hiện dựa trên quy tắc chạy real-time khi login (xem [web_app/README.md](web_app/README.md)).
 
 ---
 
@@ -200,11 +200,11 @@ Lưu ý: khi clone repo mới, chỉ cần chạy `python scripts/setup_database
 
 ## Tài liệu chi tiết từng phần
 
-- **[agent/README.md](agent/README.md)** — AI Response Agent architecture, usage, and integration.
-- **[classification/README.md](classification/README.md)** — ML Classification module, demos, and API.
+- **[agent/README.md](agent/README.md)** — AI Phản hồi Agent architecture, usage, and integration.
+- **[classification/README.md](classification/README.md)** — ML Classification mô-đun, demos, and API.
 - **[data_generator/README.md](data_generator/README.md)** — Synthetic data generation, patterns, and scenarios.
-- **[ml/README.md](ml/README.md)** — ML pipeline: features, training, inference, and evaluation.
-- **[detection_system/README.md](detection_system/README.md)** — Rule-based (aggregator, rule_loader, rule_evaluator), rules JSON, ML gateway.
-- **[web_app/README.md](web_app/README.md)** — App, routes, detection_integration, models, config, templates.
+- **[ml/README.md](ml/README.md)** — ML pipeline: đặc trưng, training, inference, and evaluation.
+- **[detection_system/README.md](detection_system/README.md)** — Dựa trên quy tắc (aggregator, rule_loader, rule_evaluator), rules JSON, ML gateway.
+- **[web_app/README.md](web_app/README.md)** — App, routes, detection_integration, models, cấu hình, templates.
 - **[scripts/README.md](scripts/README.md)** — run_generator, run_rulebase, run_ml, setup_database.
 - **[database/README.md](database/README.md)** — Schema, bảng, mối quan hệ.

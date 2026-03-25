@@ -1,23 +1,23 @@
 from __future__ import annotations
 
 """
-ML gateway for the Detection System / Decision Engine.
+Cổng ML cho Hệ thống Phát hiện / Decision Engine.
 
-This module defines a thin, explicit interface for calling the ML models from
-the rule-based detection system or the web application.
+Mô-đun này định nghĩa interface nhẹ nhàng cho việc gọi mô hình ML từ
+hệ thống phát hiện dựa trên quy tắc hoặc ứng dụng web.
 
 Design goals:
-- Centralize ML model loading & caching (`initialize_ml_models`).
+- Centralize ML model tải & caching (`initialize_ml_models`).
 - Provide a simple function `evaluate_event` that:
-  - Accepts an event dict (same schema as rule-based system).
-  - Optionally accepts a pre-computed ML feature vector.
+  - Accepts an sự kiện dict (same schema as dựa trên quy tắc system).
+  - Optionally accepts a pre-computed ML đặc trưng vector.
   - Returns a structured ML decision payload suitable for the Decision Engine.
 
-IMPORTANT: Real-time feature extraction from raw events to ML features is NOT
+IMPORTANT: Real-time đặc trưng extraction from raw events to ML đặc trưng is NOT
 implemented here yet. For production use, a stateful aggregator (reusing
 `SimpleAggregator` or a dedicated ML aggregator) must be used to compute
-sliding-window features consistent with `ml.feature_builder` and
-`ml.features.ALL_FEATURES`.
+sliding-window đặc trưng consistent with `ml.feature_builder` and
+`ml.đặc trưng.ALL_FEATURES`.
 """
 
 import os
@@ -25,7 +25,7 @@ import sys
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Mapping, Optional, Union
 
-# Ensure project root is on sys.path so we can import `ml.*`
+# Đảm bảo thư mục gốc dự án có trong sys.path để có thể import `ml.*`
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
@@ -47,7 +47,7 @@ class MLEvaluationResult:
     Normalized output shape for ML decisions.
 
     Fields are intentionally generic so that a higher-level Decision Engine can
-    combine rule-based and ML evidence before choosing an action.
+    combine dựa trên quy tắc and ML evidence before choosing an action.
     """
 
     enabled: bool
@@ -68,7 +68,7 @@ _ML_ENABLED: bool = False
 
 def initialize_ml_models(models_dir: str = "models") -> bool:
     """
-    Load ML models into memory and mark ML as enabled for the gateway.
+    Tải ML models into memory and mark ML as enabled for the gateway.
 
     This should be called once during application startup (e.g. alongside
     `initialize_detection_system` in the web app).
@@ -89,7 +89,7 @@ def initialize_ml_models(models_dir: str = "models") -> bool:
 
 def is_ml_enabled() -> bool:
     """
-    Return True if ML models have been successfully initialized.
+    Trả về True if ML models have been successfully initialized.
     """
     return _ML_ENABLED and _ML_MODELS is not None
 
@@ -99,18 +99,18 @@ def evaluate_event(
     feature_vector: Optional[MLFeatureVector] = None,
 ) -> MLEvaluationResult:
     """
-    Evaluate a single event with ML models, given a pre-computed feature vector.
+    Evaluate a single sự kiện with ML models, given a pre-computed đặc trưng vector.
 
     Args:
-        event: Event dict with fields like `timestamp`, `username`, `src_ip`,
+        sự kiện: Sự kiện dict with fields like `timestamp`, `username`, `src_ip`,
             `success`, `is_attack`, `attack_type`, etc. (same schema used by
-            generators and rule-based system). Currently used only for debug
-            context; online feature computation is **not** implemented here.
+            generators and dựa trên quy tắc system). Currently used only for debug
+            context; online đặc trưng computation is **not** implemented here.
         feature_vector: Either:
             - Mapping[str, float]: `{feature_name: value}`, matching
-              `ml.features.get_feature_names()`. Missing values default to 0.0.
+              `ml.đặc trưng.get_feature_names()`. Missing values default to 0.0.
             - List[float] / 1D array: already ordered according to
-              `ml.features.get_feature_names()`.
+              `ml.đặc trưng.get_feature_names()`.
 
     Returns:
         MLEvaluationResult with:
@@ -119,9 +119,9 @@ def evaluate_event(
         - thresholds and debug info for higher-level policies.
 
     Notes:
-        Real-time feature extraction (from raw event + aggregator state) is
+        Real-time đặc trưng extraction (from raw sự kiện + aggregator trạng thái) is
         intentionally left to a future component. This gateway focuses only on:
-        - model loading
+        - model tải
         - prediction
         - output normalization
     """

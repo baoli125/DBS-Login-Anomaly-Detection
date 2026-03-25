@@ -1,6 +1,6 @@
 """
 Complete Flask Application - EaglePro Web App
-Integrated with Detection System (Rule-Based + ML + Agent + Classification)
+Integrated with Phát hiện System (Rule-Based + ML + Agent + Classification)
 """
 
 import sys
@@ -31,7 +31,7 @@ def create_app():
                 template_folder='templates',
                 static_folder='static')
     
-    # Configuration
+    # Cấu hình
     app.config['SECRET_KEY'] = 'eaglepro-secret-key-2024'
     app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production
     app.config['SESSION_COOKIE_HTTPONLY'] = True

@@ -1,7 +1,7 @@
 """
-Output Formatting Module
+Mô-đun Định dạng Kết quả
 
-Handles formatting and display of classification results.
+Xử lý định dạng và hiển thị các kết quả phân loại.
 """
 
 import json
@@ -9,10 +9,10 @@ from typing import Dict, List, Any
 
 
 class ResultFormatter:
-    """Formats classification results for display."""
+    """Định dạng kết quả phân loại để hiển thị."""
 
     def format_single_event_result(self, result: Dict[str, Any]) -> str:
-        """Format result for single event classification."""
+        """Định dạng kết quả cho phân loại một sự kiện."""
         if 'error' in result:
             return f" Error: {result['error']}\nEvent: {json.dumps(result['event'], indent=2, default=str)}"
 
@@ -43,7 +43,7 @@ class ResultFormatter:
 
     def format_dataset_results(self, classifications: List[Dict[str, Any]],
                              summary: Dict[str, Any], show_details: bool = True) -> str:
-        """Format results for dataset classification."""
+        """Định dạng kết quả cho phân loại tập dữ liệu."""
         lines = []
         lines.append(" Dataset Classification Demo")
         lines.append("=" * 50)
@@ -73,7 +73,7 @@ class ResultFormatter:
         return "\n".join(lines)
 
     def format_attack_summary(self, summary: Dict[str, Any]) -> str:
-        """Format attack summary statistics."""
+        """Định dạng thống kê tóm tắt tấn công."""
         lines = []
         lines.append(" Attack Detection Summary:")
         lines.append(f"  Total Events: {summary['total_events']}")

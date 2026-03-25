@@ -1,0 +1,77 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/DBS-Login-Anomaly-Detection-main/data/test_noisy.ndjson",
+  "generated_at": "2026-03-16T10:16:20.230641Z",
+  "rule_results": {
+    "total_events": 9056,
+    "attack_events": 5042,
+    "normal_events": 4014,
+    "total_alerts": 150,
+    "true_positives": 146,
+    "false_positives": 4,
+    "false_negatives": 4896,
+    "precision": 0.9733333333333334,
+    "recall": 0.02895676318921063,
+    "f1_score": 0.05624036979969183,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 144,
+        "attack_alerts": 140,
+        "false_positives": 4,
+        "detected_events_count": 140,
+        "precision": 0.9722222222222222
+      },
+      "R-BRUTE-RAPID": {
+        "total_alerts": 6,
+        "attack_alerts": 6,
+        "false_positives": 0,
+        "detected_events_count": 6,
+        "precision": 1.0
+      }
+    },
+    "attack_type_detection": {
+      "rapid_bruteforce": {
+        "total": 1581,
+        "detected": 8,
+        "rate": 0.005060088551549652
+      },
+      "distributed_attack": {
+        "total": 1705,
+        "detected": 1,
+        "rate": 0.0005865102639296188
+      },
+      "credential_stuffing": {
+        "total": 1756,
+        "detected": 137,
+        "rate": 0.07801822323462415
+      }
+    },
+    "processing_time": "2026-03-16T17:16:19.575381"
+  },
+  "ml_metrics": {
+    "threshold": 0.449,
+    "precision": 0.8701923076923077,
+    "recall": 0.035898452994843316,
+    "f1": 0.06895238095238096,
+    "roc_auc": 0.5272138550377131,
+    "pr_auc": 0.6013137802274797,
+    "threshold_used": 0.449,
+    "threshold_name": "t_balanced"
+  },
+  "ml_attack_type_detection": {
+    "rapid_bruteforce": {
+      "total": 1581,
+      "detected": 9,
+      "rate": 0.0056925996204933585
+    },
+    "distributed_attack": {
+      "total": 1705,
+      "detected": 33,
+      "rate": 0.01935483870967742
+    },
+    "credential_stuffing": {
+      "total": 1756,
+      "detected": 139,
+      "rate": 0.07915717539863326
+    }
+  }
+}

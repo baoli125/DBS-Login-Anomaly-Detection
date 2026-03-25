@@ -1,0 +1,8 @@
+{
+  "binary_thresholds": {
+    "t_high_recall": 0.3,
+    "t_balanced": 0.5,
+    "t_high_precision": 0.7
+  },
+  "notes": "Các ngưỡng đã cố định cho phân loại nhị phân. Sử dụng như sau:\n- t_high_recall (0.3): Ưu tiên recall cao (phát hiện nhiều tấn công, nhưng nhiều false positive)\n- t_balanced (0.5): Cân bằng giữa precision và recall\n- t_high_precision (0.7): Ưu tiên precision cao (ít false positive, nhưng có thể bỏ sót tấn công)"
+}

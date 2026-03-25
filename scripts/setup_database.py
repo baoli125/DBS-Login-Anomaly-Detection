@@ -107,7 +107,7 @@ class DatabaseSchemaSetup:
             """)
             print(" Table 'hidden_files' created")
             
-            # 4. Bảng auth_logs (cho detection system)
+            # 4. Bảng auth_logs (cho phát hiện system)
             cursor.execute("""
                 CREATE TABLE auth_logs (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -149,7 +149,7 @@ class DatabaseSchemaSetup:
                     confidence FLOAT,
                     attack_type VARCHAR(50),
                     rule_name VARCHAR(100),
-                    features JSON,
+                    đặc trưng JSON,
                     action_taken VARCHAR(50),
                     action_details TEXT,
                     resolved BOOLEAN DEFAULT FALSE,
@@ -220,7 +220,7 @@ class DatabaseSchemaSetup:
             conn.commit()
 
     def load_sample_data(self, conn):
-        """Load sample data from database/sample_data.sql"""
+        """Tải sample data from database/sample_data.sql"""
         sample_sql_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'database', 'sample_data.sql')
         print(f" Loading sample data from: {sample_sql_path}")
 

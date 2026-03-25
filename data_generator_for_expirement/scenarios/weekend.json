@@ -1,0 +1,16 @@
+{
+    "name": "weekend",
+    "description": "Weekend traffic with lower volume",
+    "type": "normal",
+    "events_per_hour": 50,
+    "success_rate": 0.90,
+    "time_range": {
+        "start_hour": 10,
+        "end_hour": 20
+    },
+    "characteristics": {
+        "slow_peak": true,
+        "mobile_devices_ratio": 0.7,
+        "longer_sessions": true
+    }
+}

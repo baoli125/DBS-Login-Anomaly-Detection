@@ -1,5 +1,5 @@
 """
-Classification Runner
+Classification Trình chạy
 
 CLI interface for classification demos.
 """
@@ -13,20 +13,20 @@ from classification.demo.dataset_demo import DatasetDemo
 
 
 def main():
-    """Main entry point for classification runner."""
+    """Chính entry point for classification runner."""
     parser = argparse.ArgumentParser(
         description="EaglePro Classification Demo Runner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Single event classification
-  python -m classification.runner single --event '{"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": false}'
+  # Single sự kiện classification
+  python -m classification.runner single --sự kiện '{"timestamp": "2024-01-01T00:00:00Z", "username": "admin", "src_ip": "192.168.1.100", "success": false}'
 
-  # Dataset classification demo
-  python -m classification.runner dataset --dataset data/test_events.ndjson --limit 20
+  # Tập dữ liệu classification demo
+  python -m classification.runner tập dữ liệu --tập dữ liệu data/test_events.ndjson --limit 20
 
-  # Dataset stats
-  python -m classification.runner stats --dataset data/test_events.ndjson
+  # Tập dữ liệu stats
+  python -m classification.runner stats --tập dữ liệu data/test_events.ndjson
         """
     )
 

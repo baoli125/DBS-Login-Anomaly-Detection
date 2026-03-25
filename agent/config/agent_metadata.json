@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-03-22T10:00:00Z",
+  "decision_engine": {
+    "risk_score_weights": {
+      "rule_weight": 0.5,
+      "ml_weight": 0.5,
+      "description": "Trọng số kết hợp rule-based và ML (tổng = 1.0). Công thức: risk_score = rule_score * rule_weight + ml_score * ml_weight"
+    },
+    "action_thresholds": {
+      "ml_block_threshold": 0.8,
+      "risk_score_block": 0.75,
+      "risk_score_throttle": 0.6,
+      "risk_score_challenge": 0.4,
+      "description": "Ngưỡng điểm để quyết định hành động: nếu risk_score vượt ngưỡng => thực hiện action tương ứng (block, throttle, challenge, hoặc allow)"
+    },
+    "ml_score_minimum_factors": {
+      "min_rule_score_for_combined": 0.3,
+      "min_ml_score_for_combined": 0.3,
+      "description": "Điều kiện tối thiểu: chỉ kết hợp rule + ML nếu CẢ HAI đều > ngưỡng này. Nếu một cái = 0, dùng cây kia mà không weighted mix"
+    }
+  },
+  "per_attack_type_thresholds": {
+    "credential_stuffing": {
+      "ml_score_threshold": 0.5,
+      "precision_priority": true,
+      "description": "Ngưỡng cao (0.5) để giữ precision cao, tránh false positive. Ưu tiên: độ chính xác > phát hiện nhiều"
+    },
+    "distributed_attack": {
+      "ml_score_threshold": 0.25,
+      "precision_priority": false,
+      "description": "Ngưỡng thấp (0.25) để tăng recall, có thể chấp nhận false positive. Ưu tiên: phát hiện tấn công > chính xác tuyệt đối"
+    },
+    "rapid_bruteforce": {
+      "ml_score_threshold": 0.2,
+      "precision_priority": false,
+      "description": "Ngưỡng thấp (0.2) để tăng recall trong phát hiện brute force. Đây là loại tấn công cần xử lý nhanh"
+    }
+  },
+  "blocking_policy": {
+    "block_duration_seconds": 3600,
+    "description": "Thời gian khóa IP sau khi phát hiện (mặc định: 3600 giây = 1 giờ)"
+  }
+}

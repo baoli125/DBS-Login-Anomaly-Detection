@@ -1,7 +1,7 @@
 """
-Event Processing Module
+Mô-đun Xử lý Sự kiện
 
-Handles loading and preprocessing of events for the agent.
+Xử lý việc tải và tiền xử lý các sự kiện cho agent.
 """
 
 import os
@@ -12,22 +12,22 @@ from scripts.run_rulebase import load_ndjson
 
 
 class EventLoader:
-    """Handles loading and filtering of events."""
+    """Xử lý việc tải và lọc các sự kiện."""
 
     def load_new_events(self, dataset_path: str, last_processed_timestamp: datetime,
                        processed_hashes: Set[str]) -> List[Dict[str, Any]]:
-        """Load events newer than last processed timestamp."""
+        """Tải các sự kiện mới hơn timestamp đã xử lý cuối cùng."""
         if not os.path.exists(dataset_path):
             return []
 
         events = load_ndjson(dataset_path)
 
-        # Filter new events
+        # Lọc các sự kiện mới
         new_events = []
         latest_timestamp = last_processed_timestamp
 
         for event in events:
-            # Parse timestamp
+            # Phân tích timestamp
             ts_str = event.get('timestamp')
             if ts_str:
                 try:
@@ -38,20 +38,20 @@ class EventLoader:
                 except:
                     continue
 
-                # Create event hash to avoid reprocessing
+                # Tạo sự kiện hash để tránh xử lý lại
                 event_hash = f"{event.get('timestamp')}_{event.get('username')}_{event.get('src_ip')}"
 
-                # Skip if already processed or too old
+                # Bỏ qua nếu đã xử lý hoặc quá cũ
                 if ts > last_processed_timestamp and event_hash not in processed_hashes:
                     new_events.append(event)
                     processed_hashes.add(event_hash)
 
-                    # Update latest timestamp
+                    # Cập nhật latest timestamp
                     if ts > latest_timestamp:
                         latest_timestamp = ts
 
         # Update the caller's last processed timestamp
-        # Note: This is a bit of a hack - ideally we'd return this separately
+        # Note: This is a bit of a hack - ideally we'd trả về this separately
         if hasattr(self, '_last_timestamp_ref'):
             self._last_timestamp_ref[0] = latest_timestamp
 
@@ -59,7 +59,7 @@ class EventLoader:
 
     def load_events_in_range(self, dataset_path: str, start_time: datetime,
                            end_time: datetime) -> List[Dict[str, Any]]:
-        """Load events within a specific time range."""
+        """Tải các sự kiện trong khoảng thời gian nhất định."""
         if not os.path.exists(dataset_path):
             return []
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-AI Response Agent Runner
+AI Phản hồi Agent Trình chạy
 
-CLI interface for the AI Response Agent.
+Giao diện CLI cho AI Phản hồi Agent.
 """
 
 import argparse

@@ -190,7 +190,7 @@ class Database:
             sql = """
             INSERT INTO alerts 
             (alert_type, entity_type, entity_value, detection_time, 
-             attack_type, rule_name, action_taken, features)
+             attack_type, rule_name, action_taken, đặc trưng)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (

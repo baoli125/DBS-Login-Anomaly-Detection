@@ -1,5 +1,5 @@
 """
-Complete Web App Integration for EaglePro Detection System
+Complete Web App Integration for EaglePro Phát hiện System
 Tích hợp: Rule-Based + ML + Classification + Agent Decision Engine
 """
 
@@ -20,6 +20,7 @@ try:
     from detection_system.rule_based.rule_evaluator import RuleEvaluator
     from detection_system.rule_based.rule_loader import RuleLoader
     from agent.core.agent import ResponseAgent
+    from agent.core.config_loader import load_agent_config
     from classification.core.classifier import EventClassifier
     from ml.core.inference import predict_attack_and_type, load_models
     
@@ -37,6 +38,7 @@ RESPONSE_AGENT = None
 EVENT_CLASSIFIER = None
 ML_MODELS = None
 ML_MODELS_DIR = None
+AGENT_CONFIG = None
 
 # In-memory storage for blocked IPs (can be replaced with DB)
 BLOCKED_IPS = {}
@@ -45,8 +47,8 @@ ACTIVE_ALERTS = []
 # ==================== INITIALIZATION ====================
 
 def initialize_detection_system(debug_enabled=False):
-    """Initialize complete detection system"""
-    global AGGREGATOR, RULE_EVALUATOR, RESPONSE_AGENT, EVENT_CLASSIFIER, ML_MODELS
+    """Khởi tạo complete phát hiện system"""
+    global AGGREGATOR, RULE_EVALUATOR, RESPONSE_AGENT, EVENT_CLASSIFIER, ML_MODELS, AGENT_CONFIG
     
     logger.setLevel(logging.DEBUG if debug_enabled else logging.INFO)
     
@@ -60,15 +62,18 @@ def initialize_detection_system(debug_enabled=False):
         RULE_EVALUATOR = RuleEvaluator(debug_enabled=debug_enabled)
         logger.info(" Rule Evaluator initialized")
         
-        rule_loader = RuleLoader()
-        logger.info(f" Loaded {len(rule_loader.rules)} core rules")
+        # Get rule count from the evaluator's rule loader
+        rule_count = len(RULE_EVALUATOR.rule_loader.rules) if RULE_EVALUATOR.rule_loader else 0
+        logger.info(f" Loaded {rule_count} core rules")
         
-        # 2. Response Agent
+        # 2. Phản hồi Agent & Cấu hình
         try:
             RESPONSE_AGENT = ResponseAgent()
+            AGENT_CONFIG = load_agent_config()
             logger.info(" Response Agent initialized")
+            logger.info(f" Agent config loaded: ml_weight={AGENT_CONFIG.ml_weight}, rule_weight={AGENT_CONFIG.rule_weight}")
         except Exception as e:
-            logger.warning(f"  Response Agent not available: {e}")
+            logger.warning(f"  Response Agent or config not available: {e}")
         
         # 3. ML System
         try:
@@ -102,7 +107,7 @@ def process_login_event(
     debug: bool = False
 ) -> Dict[str, Any]:
     """
-    Process login event with complete detection pipeline
+    Process login sự kiện with complete phát hiện pipeline
     
     Returns:
         Dict with: should_block, block_reason, alert_message, detection_type, etc.
@@ -129,7 +134,7 @@ def process_login_event(
     try:
         # ==================== RULE-BASED DETECTION ====================
         if AGGREGATOR and RULE_EVALUATOR:
-            # Create event
+            # Create sự kiện
             event = {
                 'timestamp': datetime.now(),
                 'username': username,
@@ -160,7 +165,7 @@ def process_login_event(
         # ==================== ML DETECTION ====================
         if not success and EVENT_CLASSIFIER and ML_MODELS:
             try:
-                # Prepare features for ML based on aggregator window metrics
+                # Prepare đặc trưng for ML based on aggregator window metrics
                 features = build_ml_features(event, AGGREGATOR)
                 features['username'] = username
                 features['src_ip'] = src_ip
@@ -199,51 +204,71 @@ def process_login_event(
                 logger.warning(f"ML detection error: {e}")
 
         # ==================== AGENT DECISION ENGINE ====================
-        if RESPONSE_AGENT:
+        if RESPONSE_AGENT and AGENT_CONFIG:
             try:
-                # Determine action based on combined detection
+                # Determine action based on combined phát hiện
                 ml_score = result['ml_prediction'].get('score', 0)
                 rule_score = result['confidence']
+                attack_type = result.get('attack_type', 'unknown')
 
-                # Fixed ML block threshold, up to you to tune
-                ml_block_threshold = 0.8
+                # Tải thresholds from agent cấu hình
+                rule_weight = AGENT_CONFIG.rule_weight
+                ml_weight = AGENT_CONFIG.ml_weight
+                ml_block_threshold = AGENT_CONFIG.ml_block_threshold
+                
+                # Per-tấn công-type ML threshold (if specified)
+                attack_type_threshold = AGENT_CONFIG.per_attack_type_thresholds.get(attack_type, {})
+                custom_ml_threshold = attack_type_threshold.get('ml_score_threshold')
+                
+                # Minimum factors for considering both rule and ML
+                min_rule = AGENT_CONFIG.min_rule_score_for_combined
+                min_ml = AGENT_CONFIG.min_ml_score_for_combined
 
-                if rule_score > 0 and ml_score > 0:
-                    risk_score = rule_score * 0.6 + ml_score * 0.4
-                elif rule_score > 0:
+                # Compute weighted risk score
+                if rule_score > min_rule and ml_score > min_ml:
+                    # Both rule and ML agree (above minimum) - use weighted combination
+                    risk_score = rule_score * rule_weight + ml_score * ml_weight
+                elif rule_score > min_rule:
+                    # Only rule above minimum
                     risk_score = rule_score
-                elif ml_score > 0:
+                elif ml_score > min_ml:
+                    # Only ML above minimum
                     risk_score = ml_score
                 else:
+                    # Neither above minimum
                     risk_score = 0.0
 
-                # Force ML-heavy block at threshold (ensures ml >= 0.8 is not ignored).
-                if ml_score >= ml_block_threshold:
+                # If per-tấn công-type threshold is defined and ML score passes it, boost confidence
+                if custom_ml_threshold and ml_score >= custom_ml_threshold:
+                    risk_score = max(risk_score, ml_score)
+                # Otherwise use global ML block threshold
+                elif ml_score >= ml_block_threshold:
                     risk_score = max(risk_score, ml_score)
 
                 result['risk_score'] = risk_score
 
-                # Decision logic
-                if ml_score >= ml_block_threshold:
+                # Decision logic using thresholds from cấu hình
+                if (custom_ml_threshold and ml_score >= custom_ml_threshold) or (ml_score >= ml_block_threshold):
                     result['action'] = 'block'
                     result['should_block'] = True
-                    result['block_reason'] = 'High ML confidence (>=0.8)'
-                elif risk_score > 0.85:
+                    reason = f"High ML confidence (threshold={custom_ml_threshold or ml_block_threshold:.2f})"
+                    result['block_reason'] = reason
+                elif risk_score > AGENT_CONFIG.risk_score_block:
                     result['action'] = 'block'
                     result['should_block'] = True
-                    result['block_reason'] = 'High risk detected'
-                elif risk_score > 0.6:
+                    result['block_reason'] = f'High risk detected (score={risk_score:.2f})'
+                elif risk_score > AGENT_CONFIG.risk_score_throttle:
                     result['action'] = 'throttle'
                     result['needs_2fa'] = True
-                elif risk_score > 0.4:
+                elif risk_score > AGENT_CONFIG.risk_score_challenge:
                     result['action'] = 'challenge'
                     result['needs_2fa'] = True
                 else:
                     result['action'] = 'allow'
 
-                # Log for agent processing only when action not allow
+                # Log for agent processing only when action not cho phép
                 if result['action'] != 'allow':
-                    logger.info(f"Agent decision: action={result['action']}, risk_score={risk_score:.2f}")
+                    logger.info(f"Agent decision: action={result['action']}, risk_score={risk_score:.2f}, attack_type={attack_type}, rule={rule_score:.2f}, ml={ml_score:.2f}")
                 else:
                     logger.debug(f"Agent decision: allow (risk_score={risk_score:.2f})")
 
@@ -271,14 +296,16 @@ def process_login_event(
         
         # ==================== IP BLOCKING ====================
         if result['should_block']:
-            block_duration = 3600  # 1 hour
+            # Use block duration from agent cấu hình, default to 3600 seconds (1 hour)
+            block_duration = AGENT_CONFIG.block_duration_seconds if AGENT_CONFIG else 3600
             BLOCKED_IPS[src_ip] = {
                 'blocked_at': datetime.now(),
                 'expires_at': datetime.now() + timedelta(seconds=block_duration),
                 'reason': result['block_reason'],
                 'alert_id': alert['id'] if result['detection_type'] != 'none' else None
             }
-            logger.warning(f"BLOCKED: IP {src_ip} for 1 hour (risk={result['risk_score']:.2f})")
+            block_hours = block_duration / 3600
+            logger.warning(f"BLOCKED: IP {src_ip} for {block_hours:.1f} hour(s) (risk={result['risk_score']:.2f})")
         
         return result
         
@@ -291,7 +318,7 @@ def process_login_event(
 # ==================== HELPER FUNCTIONS ====================
 
 def build_ml_features(event: Dict[str, Any], aggregator: Optional[SimpleAggregator]) -> Dict[str, float]:
-    """Build ML features from aggregator statistics for this event."""
+    """Xây dựng ML đặc trưng from aggregator statistics for this sự kiện."""
     timestamp = event.get('timestamp') or datetime.now()
     if isinstance(timestamp, str):
         try:
@@ -324,7 +351,7 @@ def build_ml_features(event: Dict[str, Any], aggregator: Optional[SimpleAggregat
     username = event.get('username')
     pair_key = f"{src_ip}:{username}" if src_ip and username else None
 
-    # Load aggregated values from existing state
+    # Tải aggregated values from existing trạng thái
     if src_ip:
         ip_metrics = aggregator.get_metrics_at_event_time('ip', src_ip, event)
         base['ip_attempts_1s'] = float(ip_metrics.get('total_1s', 0) or 0)
@@ -346,7 +373,7 @@ def build_ml_features(event: Dict[str, Any], aggregator: Optional[SimpleAggregat
         base['pair_attempts_5m'] = float(pair_metrics.get('total_5m', 0) or 0)
         base['pair_success_rate_5m'] = float(pair_metrics.get('success_rate', 0) or 0)
 
-    # Time-based features
+    # Time-based đặc trưng
     hour = timestamp.hour if hasattr(timestamp, 'hour') else datetime.now().hour
     import math
     base['hour_sin'] = math.sin(2 * math.pi * hour / 24)
@@ -370,7 +397,7 @@ def is_ip_blocked(ip: str) -> bool:
 
 def get_blocked_ips() -> List[Dict[str, Any]]:
     """Get list of currently blocked IPs"""
-    # Clean up expired blocks
+    # Dọn dẹp expired blocks
     expired = [ip for ip, info in BLOCKED_IPS.items() 
                if datetime.now() > info['expires_at']]
     for ip in expired:
@@ -403,7 +430,7 @@ def resolve_alert(alert_id: int, resolution: str = 'resolved'):
     return False
 
 def get_detection_stats() -> Dict[str, Any]:
-    """Get detection statistics"""
+    """Get phát hiện statistics"""
     return {
         'total_alerts': len(ACTIVE_ALERTS),
         'active_alerts': len([a for a in ACTIVE_ALERTS if a['status'] == 'active']),

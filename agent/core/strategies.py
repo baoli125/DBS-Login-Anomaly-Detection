@@ -1,7 +1,9 @@
-"""
-Response Strategies
 
-Implements different response strategies for each attack type.
+"""
+Chiến lược Phản hồi
+
+Triển khai các chiến lược phản hồi khác nhau cho từng loại tấn công.
+Code được tổ chức và comment rõ ràng để dễ hiểu và trình diễn demo.
 """
 
 import time
@@ -12,13 +14,19 @@ from agent.core.state import ResponseState
 
 
 class ResponseStrategies:
-    """Handles different response strategies for attack types."""
+    """
+    Xử lý các chiến lược phản hồi khác nhau cho các loại tấn công.
+    Mỗi method triển khai một phản hồi rõ ràng, thân thiện với demo (khóa IP, yêu cầu 2FA, etc.).
+    """
 
     def __init__(self, state: ResponseState):
         self.state = state
 
     def apply_response(self, classification: Dict[str, Any]) -> None:
-        """Apply appropriate response based on attack classification."""
+        """
+        Áp dụng phản hồi phù hợp dựa trên phân loại tấn công.
+        In các hành động để rõ ràng trong demo.
+        """
         event = classification['event']
         attack_type = classification['attack_type']
         username = event.get('username', 'unknown')
@@ -41,7 +49,9 @@ class ResponseStrategies:
             print(f"  Unknown attack type: {attack_type} - no action taken")
 
     def _respond_rapid_bruteforce(self, src_ip: str, username: str) -> None:
-        """Response: Temporary IP block."""
+        """
+        Phản hồi: Chặn IP tạm thời cho các cuộc tấn công brute-force nhanh.
+        """
         block_duration = timedelta(minutes=5)
         self.state.add_blocked_ip(src_ip, block_duration)
         unblock_time = datetime.now() + block_duration
@@ -63,7 +73,9 @@ class ResponseStrategies:
         self.state.add_alert(alert_id, alert_info)
 
     def _respond_credential_stuffing(self, username: str, src_ip: str) -> None:
-        """Response: Require 2FA for user."""
+        """
+        Phản hồi: Yêu cầu 2FA cho người dùng (credential stuffing).
+        """
         self.state.add_2fa_requirement(username)
 
         print("  RESPONSE: Credential Stuffing")
@@ -82,7 +94,9 @@ class ResponseStrategies:
         self.state.add_alert(alert_id, alert_info)
 
     def _respond_distributed_attack(self, username: str, src_ip: str) -> None:
-        """Response: Admin alert and monitoring."""
+        """
+        Phản hồi: Cảnh báo admin và giám sát cho các cuộc tấn công phân tán.
+        """
         monitor_duration = timedelta(hours=1)
         self.state.add_monitoring_target(f"user_{username}", monitor_duration)
 
@@ -104,7 +118,9 @@ class ResponseStrategies:
         self.state.add_alert(alert_id, alert_info)
 
     def _respond_targeted_slow(self, username: str, src_ip: str) -> None:
-        """Response: Increased monitoring only."""
+        """
+        Phản hồi: Chỉ tăng giám sát cho các tấn công chậm/nhỏ.
+        """
         monitor_duration = timedelta(hours=2)
         self.state.add_monitoring_target(f"user_{username}", monitor_duration)
 

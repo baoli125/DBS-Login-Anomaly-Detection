@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-AI Response Agent for Brute-Force Detection & Classification.
+AI Phản hồi Agent cho Phát hiện & Phân loại Brute-Force.
 
-This agent:
-1. Monitors login events periodically (every 5 minutes)
-2. Uses ML models to detect and classify attacks
-3. Applies appropriate response strategies based on attack type
+Agent này:
+1. Giám sát các sự kiện đăng nhập định kỳ (mỗi 5 phút)
+2. Sử dụng mô hình ML để phát hiện và phân loại tấn công
+3. Áp dụng chiến lược phản hồi phù hợp dựa trên loại tấn công
 
-Response Strategies:
-- rapid_bruteforce: Temporary IP block (5 minutes)
-- credential_stuffing: Require 2FA for affected users
-- distributed_attack: Admin alert + monitoring
-- targeted_slow_low: Increased monitoring only
+Chiến lược Phản hồi:
+- rapid_bruteforce: Chặn IP tạm thời (5 phút)
+- credential_stuffing: Yêu cầu 2FA cho người dùng bị ảnh hưởng
+- distributed_attack: Cảnh báo admin + giám sát
+- targeted_slow_low: Chỉ tăng giám sát
 """
 
 import argparse
@@ -33,26 +33,26 @@ from scripts.run_rulebase import load_ndjson
 
 
 class ResponseAgent:
-    """AI Agent for automated response to detected attacks."""
+    """AI Agent để phản hồi tự động với các tấn công được phát hiện."""
 
     def __init__(self, models_dir: str = "models", check_interval: int = 300):
         """
-        Initialize the response agent.
+        Khởi tạo phản hồi agent.
 
         Args:
-            models_dir: Directory containing ML models
-            check_interval: Check interval in seconds (default: 5 minutes)
+            models_dir: Thư mục chứa mô hình ML
+            check_interval: Khoảng thời gian kiểm tra tính bằng giây (mặc định: 5 phút)
         """
         self.models_dir = models_dir
         self.check_interval = check_interval
 
-        # Response state
+        # Trạng thái phản hồi
         self.blocked_ips: Dict[str, datetime] = {}  # IP -> unblock_time
         self.users_requiring_2fa: Set[str] = set()
         self.active_alerts: Dict[str, Dict[str, Any]] = {}  # alert_id -> alert_info
         self.monitoring_targets: Dict[str, datetime] = {}  # target -> end_time
 
-        # Event processing state
+        # Trạng thái xử lý sự kiện
         self.last_processed_timestamp: datetime = datetime.min
         self.processed_event_hashes: Set[str] = set()  # Avoid reprocessing
 
@@ -62,16 +62,16 @@ class ResponseAgent:
         print()
 
     def _load_new_events(self, dataset_path: str) -> List[Dict[str, Any]]:
-        """Load events newer than last processed timestamp."""
+        """Tải các sự kiện mới hơn timestamp đã xử lý cuối cùng."""
         if not os.path.exists(dataset_path):
             return []
 
         events = load_ndjson(dataset_path)
 
-        # Filter new events
+        # Lọc các sự kiện mới
         new_events = []
         for event in events:
-            # Parse timestamp
+            # Phân tích timestamp
             ts_str = event.get('timestamp')
             if ts_str:
                 try:
@@ -82,24 +82,24 @@ class ResponseAgent:
                 except:
                     continue
 
-                # Skip if already processed or too old
+                # Bỏ qua nếu đã xử lý hoặc quá cũ
                 event_hash = f"{event.get('timestamp')}_{event.get('username')}_{event.get('src_ip')}"
                 if ts > self.last_processed_timestamp and event_hash not in self.processed_event_hashes:
                     new_events.append(event)
                     self.processed_event_hashes.add(event_hash)
 
-                    # Update last processed timestamp
+                    # Cập nhật timestamp đã xử lý cuối cùng
                     if ts > self.last_processed_timestamp:
                         self.last_processed_timestamp = ts
 
         return new_events
 
     def _classify_events(self, events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Classify events using ML models."""
+        """Phân loại sự kiện bằng mô hình ML."""
         if not events:
             return []
 
-        # Build features
+        # Xây dựng đặc trưng
         df_features = build_features_from_events(events)
         if df_features.empty:
             return []
@@ -107,14 +107,14 @@ class ResponseAgent:
         classifications = []
         for idx, row in df_features.iterrows():
             feature_dict = row.to_dict()
-            # Remove non-feature columns
+            # Loại bỏ các cột không phải đặc trưng
             for col in ['timestamp', 'entity_type', 'entity_value', 'is_attack_label', 'attack_type_label']:
                 feature_dict.pop(col, None)
 
-            # Predict
+            # Dự đoán
             prediction = predict_attack_and_type(feature_dict, models_dir=self.models_dir)
 
-            # Add event info
+            # Thêm thông tin sự kiện
             event = events[idx]
             classification = {
                 'event': event,
@@ -129,7 +129,7 @@ class ResponseAgent:
         return classifications
 
     def _apply_response_strategy(self, classification: Dict[str, Any]) -> None:
-        """Apply appropriate response based on attack classification."""
+        """Áp dụng phản hồi phù hợp dựa trên phân loại tấn công."""
         event = classification['event']
         attack_type = classification['attack_type']
         username = event.get('username', 'unknown')
@@ -152,7 +152,7 @@ class ResponseAgent:
             print(f"  Unknown attack type: {attack_type} - no action taken")
 
     def _respond_rapid_bruteforce(self, src_ip: str, username: str) -> None:
-        """Response: Temporary IP block."""
+        """Phản hồi: Chặn IP tạm thời."""
         block_duration = timedelta(minutes=5)
         unblock_time = datetime.now() + block_duration
 
@@ -163,7 +163,7 @@ class ResponseAgent:
         print(f"   Unblock at: {unblock_time}")
         print()
 
-        # Log alert
+        # Ghi lại cảnh báo
         alert_id = f"rapid_{src_ip}_{int(time.time())}"
         self.active_alerts[alert_id] = {
             'type': 'ip_block',
@@ -174,7 +174,7 @@ class ResponseAgent:
         }
 
     def _respond_credential_stuffing(self, username: str, src_ip: str) -> None:
-        """Response: Require 2FA for user."""
+        """Phản hồi: Yêu cầu 2FA cho người dùng."""
         self.users_requiring_2fa.add(username)
 
         print("  RESPONSE: Credential Stuffing")
@@ -182,7 +182,7 @@ class ResponseAgent:
         print(f"   Triggered by IP: {src_ip}")
         print()
 
-        # Log alert
+        # Ghi lại cảnh báo
         alert_id = f"2fa_{username}_{int(time.time())}"
         self.active_alerts[alert_id] = {
             'type': 'require_2fa',
@@ -192,7 +192,7 @@ class ResponseAgent:
         }
 
     def _respond_distributed_attack(self, username: str, src_ip: str) -> None:
-        """Response: Admin alert and monitoring."""
+        """Phản hồi: Cảnh báo admin và giám sát."""
         monitor_duration = timedelta(hours=1)
         end_time = datetime.now() + monitor_duration
 
@@ -204,7 +204,7 @@ class ResponseAgent:
         print("    ALERT: Distributed attack detected - manual review recommended")
         print()
 
-        # Log alert
+        # Ghi lại cảnh báo
         alert_id = f"distributed_{username}_{int(time.time())}"
         self.active_alerts[alert_id] = {
             'type': 'admin_alert',
@@ -215,7 +215,7 @@ class ResponseAgent:
         }
 
     def _respond_targeted_slow(self, username: str, src_ip: str) -> None:
-        """Response: Increased monitoring only."""
+        """Phản hồi: Chỉ tăng giám sát."""
         monitor_duration = timedelta(hours=2)
         end_time = datetime.now() + monitor_duration
 
@@ -226,7 +226,7 @@ class ResponseAgent:
         print(f"   Triggered by IP: {src_ip}")
         print()
 
-        # Log alert
+        # Ghi lại cảnh báo
         alert_id = f"slow_{username}_{int(time.time())}"
         self.active_alerts[alert_id] = {
             'type': 'monitoring',
@@ -237,21 +237,21 @@ class ResponseAgent:
         }
 
     def _cleanup_expired_responses(self) -> None:
-        """Clean up expired blocks, monitoring, etc."""
+        """Dọn dẹp các phản hồi đã hết hạn."""
         now = datetime.now()
 
-        # Clean up blocked IPs
+        # Dọn dẹp IP bị chặn
         expired_ips = [ip for ip, unblock_time in self.blocked_ips.items() if now >= unblock_time]
         for ip in expired_ips:
             del self.blocked_ips[ip]
             print(f" IP {ip} unblocked (block expired)")
 
-        # Clean up monitoring
+        # Dọn dẹp giám sát
         expired_targets = [target for target, end_time in self.monitoring_targets.items() if now >= end_time]
         for target in expired_targets:
             del self.monitoring_targets[target]
 
-        # Clean up old alerts (keep last 24 hours)
+        # Dọn dẹp cảnh báo cũ (giữ lại 24 giờ cuối)
         cutoff = now - timedelta(hours=24)
         expired_alerts = [aid for aid, alert in self.active_alerts.items()
                          if alert['start_time'] < cutoff]
@@ -259,7 +259,7 @@ class ResponseAgent:
             del self.active_alerts[aid]
 
     def _print_status(self) -> None:
-        """Print current agent status."""
+        """In trạng thái agent hiện tại."""
         print(" Agent Status:")
         print(f"   Blocked IPs: {len(self.blocked_ips)}")
         print(f"   Users requiring 2FA: {len(self.users_requiring_2fa)}")
@@ -269,38 +269,38 @@ class ResponseAgent:
         print()
 
     def run_once(self, dataset_path: str) -> None:
-        """Run one cycle of monitoring and response."""
+        """Chạy một chu kỳ giám sát và phản hồi."""
         print(f" Agent cycle started at {datetime.now()}")
         print("-" * 50)
 
-        # Load new events
+        # Tải sự kiện mới
         new_events = self._load_new_events(dataset_path)
         print(f" New events: {len(new_events)}")
 
         if not new_events:
             print("   No new events to process")
         else:
-            # Classify events
+            # Phân loại sự kiện
             classifications = self._classify_events(new_events)
             attack_events = [c for c in classifications if c['is_attack']]
 
             print(f" Attack events detected: {len(attack_events)}")
 
-            # Apply responses
+            # Áp dụng phản hồi
             for classification in attack_events:
                 self._apply_response_strategy(classification)
 
-        # Cleanup expired responses
+        # Dọn dẹp phản hồi đã hết hạn
         self._cleanup_expired_responses()
 
-        # Print status
+        # In trạng thái
         self._print_status()
 
         print(f" Agent cycle completed at {datetime.now()}")
         print()
 
     def run_continuous(self, dataset_path: str) -> None:
-        """Run agent continuously."""
+        """Chạy agent liên tục."""
         print(" Starting continuous monitoring...")
         print(f"   Check interval: {self.check_interval} seconds")
         print(f"   Dataset: {dataset_path}")

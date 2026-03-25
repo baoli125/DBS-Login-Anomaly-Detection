@@ -1,6 +1,6 @@
 """
 Admin Dashboard Template HTML
-Shows alerts, blocked IPs, detection statistics
+Shows alerts, blocked IPs, phát hiện statistics
 """
 
 admin_dashboard_html = """
@@ -12,7 +12,7 @@ admin_dashboard_html = """
 <div class="page-container">
     <div class="page-header">
         <h1> Admin Dashboard</h1>
-        <p>Security monitoring and detection system management</p>
+        <p>Security giám sát and phát hiện system management</p>
     </div>
     
     <!-- Statistics Cards -->
@@ -90,7 +90,7 @@ admin_dashboard_html = """
         </div>
         
         <div class="alerts-container" id="alerts-list">
-            <div class="loading">Loading alerts...</div>
+            <div class="tải">Tải alerts...</div>
         </div>
     </div>
     
@@ -105,14 +105,14 @@ admin_dashboard_html = """
         </div>
         
         <div class="blocked-ips-container" id="blocked-ips-list">
-            <div class="loading">Loading blocked IPs...</div>
+            <div class="tải">Tải blocked IPs...</div>
         </div>
     </div>
     
     <!-- Settings Tab -->
     <div class="tab-content" id="tab-settings">
         <div class="section-header">
-            <h2>Detection System Settings</h2>
+            <h2>Phát hiện System Settings</h2>
         </div>
         
         <div class="settings-panel">
@@ -128,12 +128,12 @@ admin_dashboard_html = """
             </div>
             
             <div class="setting-item">
-                <label>Enable ML Detection</label>
+                <label>Enable ML Phát hiện</label>
                 <input type="checkbox" checked id="enable-ml">
             </div>
             
             <div class="setting-item">
-                <label>Enable Rule-Based Detection</label>
+                <label>Enable Rule-Based Phát hiện</label>
                 <input type="checkbox" checked id="enable-rules">
             </div>
             
@@ -333,7 +333,7 @@ admin_dashboard_html = """
     font-weight: bold;
 }
 
-.alert-type.rule-based {
+.alert-type.dựa trên quy tắc {
     background: #ff6b6b;
     color: white;
 }
@@ -515,7 +515,7 @@ admin_dashboard_html = """
     gap: 10px;
 }
 
-.loading {
+.tải {
     text-align: center;
     padding: 40px;
     color: #888;
@@ -542,7 +542,7 @@ admin_dashboard_html = """
 // Tab switching
 document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', function() {
-        const tabName = this.dataset.tab;
+        const tabName = this.tập dữ liệu.tab;
         
         // Hide all tabs
         document.querySelectorAll('.tab-content').forEach(tab => {
@@ -558,7 +558,7 @@ document.querySelectorAll('.tab-button').forEach(button => {
         document.getElementById(`tab-${tabName}`).classList.add('active');
         this.classList.add('active');
         
-        // Load data
+        // Tải data
         if (tabName === 'alerts') {
             refreshAlerts();
         } else if (tabName === 'blocked-ips') {
@@ -567,11 +567,11 @@ document.querySelectorAll('.tab-button').forEach(button => {
     });
 });
 
-// Load statistics
+// Tải statistics
 async function loadStats() {
     try {
-        const response = await fetch('/api/stats/detection');
-        const data = await response.json();
+        const phản hồi = await fetch('/api/stats/phát hiện');
+        const data = await phản hồi.json();
         const stats = data.stats;
         
         document.getElementById('total-alerts').querySelector('.stat-value').textContent = stats.total_alerts;
@@ -581,22 +581,22 @@ async function loadStats() {
         document.getElementById('ml-alerts').querySelector('.stat-value').textContent = stats.ml_alerts;
         document.getElementById('combined-alerts').querySelector('.stat-value').textContent = stats.combined_alerts;
     } catch (error) {
-        console.error('Error loading stats:', error);
+        console.error('Error tải stats:', error);
     }
 }
 
-// Load alerts
+// Tải alerts
 async function refreshAlerts() {
     try {
-        const response = await fetch('/api/alerts?limit=50');
-        const data = await response.json();
+        const phản hồi = await fetch('/api/alerts?limit=50');
+        const data = await phản hồi.json();
         
         const alertsList = document.getElementById('alerts-list');
         alertsList.innerHTML = '';
         
         if (data.alerts.length === 0) {
-            alertsList.innerHTML = '<div class="loading">No alerts found</div>';
-            return;
+            alertsList.innerHTML = '<div class="tải">No alerts found</div>';
+            trả về;
         }
         
         data.alerts.forEach(alert => {
@@ -604,8 +604,8 @@ async function refreshAlerts() {
             alertsList.appendChild(item);
         });
     } catch (error) {
-        console.error('Error loading alerts:', error);
-        document.getElementById('alerts-list').innerHTML = '<div class="loading" style="color: #ff6b6b;">Error loading alerts</div>';
+        console.error('Error tải alerts:', error);
+        document.getElementById('alerts-list').innerHTML = '<div class="tải" style="color: #ff6b6b;">Error tải alerts</div>';
     }
 }
 
@@ -642,21 +642,21 @@ function createAlertItem(alert) {
     `;
     
     item.addEventListener('click', () => showAlertDetail(alert));
-    return item;
+    trả về item;
 }
 
-// Load blocked IPs
+// Tải blocked IPs
 async function refreshBlockedIPs() {
     try {
-        const response = await fetch('/api/blocked_ips');
-        const data = await response.json();
+        const phản hồi = await fetch('/api/blocked_ips');
+        const data = await phản hồi.json();
         
         const ipsList = document.getElementById('blocked-ips-list');
         ipsList.innerHTML = '';
         
         if (data.blocked_ips.length === 0) {
-            ipsList.innerHTML = '<div class="loading">No blocked IPs</div>';
-            return;
+            ipsList.innerHTML = '<div class="tải">No blocked IPs</div>';
+            trả về;
         }
         
         data.blocked_ips.forEach(ip => {
@@ -664,8 +664,8 @@ async function refreshBlockedIPs() {
             ipsList.appendChild(item);
         });
     } catch (error) {
-        console.error('Error loading blocked IPs:', error);
-        document.getElementById('blocked-ips-list').innerHTML = '<div class="loading" style="color: #ff6b6b;">Error loading blocked IPs</div>';
+        console.error('Error tải blocked IPs:', error);
+        document.getElementById('blocked-ips-list').innerHTML = '<div class="tải" style="color: #ff6b6b;">Error tải blocked IPs</div>';
     }
 }
 
@@ -680,7 +680,7 @@ function createBlockedIPItem(ipInfo) {
     item.innerHTML = `
         <div class="alert-header">
             <span style="color: #00d4ff; font-weight: bold;">${ipInfo.ip}</span>
-            <button class="btn-small" onclick="unblockIP('${ipInfo.ip}', event)" style="font-size: 11px;"> Unblock</button>
+            <button class="btn-small" onclick="unblockIP('${ipInfo.ip}', sự kiện)" style="font-size: 11px;"> Unblock</button>
         </div>
         <div class="alert-info">
             <div class="alert-detail">
@@ -698,15 +698,15 @@ function createBlockedIPItem(ipInfo) {
         </div>
     `;
     
-    return item;
+    trả về item;
 }
 
-async function unblockIP(ip, event) {
-    event.stopPropagation();
+async function unblockIP(ip, sự kiện) {
+    sự kiện.stopPropagation();
     
     try {
-        const response = await fetch(`/api/blocked_ips/${ip}`, { method: 'DELETE' });
-        if (response.ok) {
+        const phản hồi = await fetch(`/api/blocked_ips/${ip}`, { method: 'DELETE' });
+        if (phản hồi.ok) {
             refreshBlockedIPs();
         }
     } catch (error) {
@@ -722,7 +722,7 @@ function showAlertDetail(alert) {
             <p><strong style="color: #00d4ff;">Username:</strong> ${alert.username || 'N/A'}</p>
             <p><strong style="color: #00d4ff;">Source IP:</strong> ${alert.src_ip}</p>
             <p><strong style="color: #00d4ff;">Alert Type:</strong> ${alert.alert_type}</p>
-            <p><strong style="color: #00d4ff;">Attack Type:</strong> ${alert.attack_type || 'N/A'}</p>
+            <p><strong style="color: #00d4ff;">Tấn công Type:</strong> ${alert.attack_type || 'N/A'}</p>
             <p><strong style="color: #00d4ff;">Rule Triggered:</strong> ${alert.rule_name || 'N/A'}</p>
             <p><strong style="color: #00d4ff;">Confidence:</strong> ${alert.confidence || 'N/A'}</p>
             <p><strong style="color: #00d4ff;">Risk Score:</strong> ${(alert.risk_score || 0).toFixed(2)}</p>
@@ -744,8 +744,8 @@ function saveSettings() {
     alert('Settings saved! (in production, this would persist to backend)');
 }
 
-// Load data on page load
-window.addEventListener('load', () => {
+// Tải data on page tải
+window.addEventListener('tải', () => {
     loadStats();
     refreshAlerts();
     

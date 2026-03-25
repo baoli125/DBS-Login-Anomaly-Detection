@@ -1,5 +1,5 @@
 """
-Rule Loader - Đơn giản, chỉ load 3 rule cốt lõi
+Rule Loader - Đơn giản, chỉ tải 3 rule cốt lõi
 """
 
 import json
@@ -12,7 +12,7 @@ class Rule:
     """Rule model đơn giản"""
     
     def __init__(self, rule_dict: Dict):
-        # Required fields
+        # Trường bắt buộc
         self.id = rule_dict['id']
         self.name = rule_dict['name']
         self.enabled = rule_dict.get('enabled', True)
@@ -24,7 +24,7 @@ class Rule:
         self.action = rule_dict.get('action', {})
         self.severity = rule_dict.get('severity', 'medium')
         
-        # Optional fields
+        # Trường tùy chọn
         self.cooldown_seconds = rule_dict.get('cooldown_seconds', 300)
         self.ttl_seconds = rule_dict.get('ttl_seconds', 3600)
         self.evidence_fields = rule_dict.get('evidence_fields', [])
@@ -68,7 +68,7 @@ class Rule:
         return f"Rule({self.id}, {self.name})"
 
 class RuleLoader:
-    """Load 3 rule cốt lõi từ thư mục rules/"""
+    """Tải 3 rule cốt lõi từ thư mục rules/"""
     
     # Danh sách 3 rule cốt lõi
     CORE_RULES = ['rapid_bruteforce', 'credential_stuffing', 'distributed_attack']
@@ -84,7 +84,7 @@ class RuleLoader:
         self.load_core_rules()
     
     def load_core_rules(self) -> Dict[str, Rule]:
-        """Chỉ load 3 rule cốt lõi"""
+        """Chỉ tải 3 rule cốt lõi"""
         self.rules = {}
         
         if not os.path.exists(self.rules_dir):
@@ -125,15 +125,15 @@ class RuleLoader:
         return self.rules
     
     def get_rule(self, rule_id: str) -> Optional[Rule]:
-        """Get rule by ID"""
+        """Lấy rule theo ID"""
         return self.rules.get(rule_id)
     
     def get_enabled_rules(self) -> List[Rule]:
-        """Get all enabled rules"""
+        """Lấy tất cả rule đang bật"""
         return [rule for rule in self.rules.values() if rule.enabled]
     
     def get_rules_by_scope(self, scope: str) -> List[Rule]:
-        """Get enabled rules for a specific scope"""
+        """Lấy các rule đã bật theo scope cụ thể"""
         return [rule for rule in self.get_enabled_rules() if rule.scope == scope]
     
     def reload_rules(self):

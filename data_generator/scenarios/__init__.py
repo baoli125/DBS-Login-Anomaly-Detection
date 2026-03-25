@@ -1,7 +1,7 @@
 """
-Data Generator Scenarios Package
+Gói Kịch bản Data Generator
 
-Contains scenario definitions and configurations.
+Chứa định nghĩa và cấu hình kịch bản.
 """
 
 # Import scenario modules here when created

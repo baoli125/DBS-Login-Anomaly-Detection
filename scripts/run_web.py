@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-EaglePro Web Application Runner
+EaglePro Web Application Trình chạy
 Khởi động web app với đầy đủ tính năng phát hiện
 """
 
 import sys
 import os
 
-# Add project root and web_app to path
+# Thêm thư mục gốc và web_app vào path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 web_app_dir = os.path.join(project_root, 'web_app')
 sys.path.insert(0, project_root)
@@ -28,25 +28,23 @@ from web_app.routes_complete import bp
 logger = logging.getLogger('EaglePro')
 
 def setup_logging(debug: bool = False):
-    """Initialize logging levels based on mode"""
-    log_level = logging.DEBUG if debug else logging.INFO
+    """Khởi tạo logging levels based on mode."""
+    log_level = logging.DEBUG if debug else logging.WARNING
     logging.basicConfig(
         level=log_level,
         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
     )
 
-    # Suppress verbose request logs when not debugging
+    # Suppress verbose request logs unless debugging
     werkzeug_logger = logging.getLogger('werkzeug')
     werkzeug_logger.setLevel(logging.DEBUG if debug else logging.WARNING)
 
-    # Keep database logs quiet in demo mode
+    # Keep database logs quiet
     db_logger = logging.getLogger('Database')
     db_logger.setLevel(logging.DEBUG if debug else logging.WARNING)
 
     if debug:
-        logger.debug(' Debug mode: verbose logging enabled')
-    else:
-        logger.info(' Standard mode: minimal logging enabled')
+        logger.debug('Debug mode: verbose logging enabled')
 
 def create_app():
     """Create and configure Flask application"""
@@ -57,7 +55,7 @@ def create_app():
                 template_folder=os.path.join(web_app_dir, 'templates'),
                 static_folder=os.path.join(web_app_dir, 'static'))
 
-    # Configuration
+    # Cấu hình
     app.config['SECRET_KEY'] = 'eaglepro-secret-key-2024'
     app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production
     app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -86,47 +84,39 @@ def create_app():
     return app
 
 def main():
-    """Main function to run the web application"""
+    """Chính function to run the web application"""
     parser = argparse.ArgumentParser(description='Run EaglePro web application')
     parser.add_argument('--debug', action='store_true', help='Enable verbose debug logs')
     args = parser.parse_args()
 
     setup_logging(args.debug)
 
-    # Control detection-system debug for consistency
+    # Control phát hiện-system debug for consistency
     import os
     os.environ['DETECTION_DEBUG'] = 'true' if args.debug else 'false'
-
-    print("=" * 60)
-    print(" EAGLEPRO WEB APPLICATION RUNNER")
-    print("=" * 60)
-    print(" Project root:", project_root)
-    print(" Web app dir:", web_app_dir)
-    print("=" * 60)
 
     try:
         app = create_app()
 
         # Run Flask app
-        print(" Starting Flask application on http://localhost:5000")
-        print(" Dashboard: http://localhost:5000/dashboard")
-        print(" Admin: http://localhost:5000/admin")
-        print(" Press Ctrl+C to stop")
-        print("=" * 60)
+        print("Starting Flask application on http://localhost:5000")
+        print("Dashboard: http://localhost:5000/dashboard")
+        print("Admin: http://localhost:5000/admin")
+        print("============================================================")
 
         app.run(
             host='0.0.0.0',
             port=5000,
             debug=args.debug,
             use_reloader=args.debug,
-            use_debugger=args.debug
+            use_debugger=args.debug,
+            threaded=True,
         )
     except KeyboardInterrupt:
-        print("\n Application stopped by user")
+        # Minimal output when stopping
+        print("\nApplication stopped by user")
     except Exception as e:
         logger.error(f" Failed to start application: {e}")
-        import traceback
-        traceback.print_exc()
         return 1
 
     return 0

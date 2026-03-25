@@ -1,0 +1,94 @@
+{
+  "dataset": "/mnt/hgfs/share_Ubuntu/DBS-Login-Anomaly-Detection-main/data/test_events.ndjson",
+  "generated_at": "2026-03-14T12:35:42.012678Z",
+  "rule_results": {
+    "total_events": 5934,
+    "attack_events": 1063,
+    "normal_events": 4871,
+    "total_alerts": 753,
+    "true_positives": 747,
+    "false_positives": 6,
+    "false_negatives": 316,
+    "precision": 0.9920318725099602,
+    "recall": 0.702728127939793,
+    "f1_score": 0.8226872246696034,
+    "rule_performance": {
+      "R-CRED-STUFF": {
+        "total_alerts": 619,
+        "attack_alerts": 613,
+        "false_positives": 6,
+        "detected_events_count": 613,
+        "precision": 0.9903069466882067
+      },
+      "R-BRUTE-RAPID": {
+        "total_alerts": 86,
+        "attack_alerts": 86,
+        "false_positives": 0,
+        "detected_events_count": 86,
+        "precision": 1.0
+      },
+      "R-DIST-ATTACK": {
+        "total_alerts": 48,
+        "attack_alerts": 48,
+        "false_positives": 0,
+        "detected_events_count": 48,
+        "precision": 1.0
+      }
+    },
+    "attack_type_detection": {
+      "credential_stuffing": {
+        "total": 710,
+        "detected": 613,
+        "rate": 0.8633802816901408
+      },
+      "distributed_attack": {
+        "total": 145,
+        "detected": 49,
+        "rate": 0.33793103448275863
+      },
+      "rapid_bruteforce": {
+        "total": 153,
+        "detected": 85,
+        "rate": 0.5555555555555556
+      },
+      "targeted_slow_low": {
+        "total": 55,
+        "detected": 0,
+        "rate": 0.0
+      }
+    },
+    "processing_time": "2026-03-14T19:35:41.857490"
+  },
+  "ml_metrics": {
+    "threshold": 0.5185095665600172,
+    "precision": 0.9533799533799534,
+    "recall": 0.7695202257761053,
+    "f1": 0.8516397709526288,
+    "roc_auc": 0.891769458231208,
+    "pr_auc": 0.8533210901901747,
+    "threshold_used": 0.5185095665600172,
+    "threshold_name": "t_balanced"
+  },
+  "ml_attack_type_detection": {
+    "credential_stuffing": {
+      "total": 710,
+      "detected": 628,
+      "rate": 0.8845070422535212
+    },
+    "distributed_attack": {
+      "total": 145,
+      "detected": 94,
+      "rate": 0.6482758620689655
+    },
+    "rapid_bruteforce": {
+      "total": 153,
+      "detected": 96,
+      "rate": 0.6274509803921569
+    },
+    "targeted_slow_low": {
+      "total": 55,
+      "detected": 0,
+      "rate": 0.0
+    }
+  }
+}

@@ -1,5 +1,5 @@
 """
-Detection System Package
+Phát hiện System Package
 """
 
 from detection_system.rule_based import (

@@ -1,7 +1,7 @@
 """
-Dataset Demo Module
+Tập dữ liệu Demo Mô-đun
 
-Handles demonstration of dataset classification.
+Xử lý demonstration of tập dữ liệu classification.
 """
 
 from typing import Dict, List, Any
@@ -12,23 +12,23 @@ from classification.core.formatter import ResultFormatter
 
 
 class DatasetDemo:
-    """Demo for classifying datasets."""
+    """Demo phân loại tập dữ liệu."""
 
     def __init__(self, models_dir: str = "models"):
         self.classifier = EventClassifier(models_dir)
         self.formatter = ResultFormatter()
 
     def run_demo(self, dataset_path: str, limit: int = 10, show_details: bool = True) -> str:
-        """Run dataset classification demo."""
-        # Load events
+        """Run tập dữ liệu classification demo."""
+        # Tải events
         events = load_ndjson(dataset_path)
         if not events:
             return f" No events loaded from {dataset_path}"
 
-        # Limit for demo
+        # Giới hạn cho demo
         events = events[:limit]
 
-        # Classify
+        # Phân loại
         classifications, summary = self.classifier.classify_dataset(events, limit)
 
         if not classifications:
@@ -38,7 +38,7 @@ class DatasetDemo:
         return self.formatter.format_dataset_results(classifications, summary, show_details)
 
     def load_and_validate_dataset(self, dataset_path: str) -> List[Dict[str, Any]]:
-        """Load and validate dataset."""
+        """Tải và kiểm tra tính hợp lệ của tập dữ liệu."""
         events = load_ndjson(dataset_path)
         if not events:
             raise FileNotFoundError(f"No events found in {dataset_path}")
@@ -53,7 +53,7 @@ class DatasetDemo:
         return events
 
     def get_dataset_stats(self, dataset_path: str) -> Dict[str, Any]:
-        """Get basic statistics about the dataset."""
+        """Lấy thống kê cơ bản của tập dữ liệu."""
         events = load_ndjson(dataset_path)
 
         total_events = len(events)
